@@ -91,6 +91,8 @@ const Unidades = () => {
         setUnidades([...unidades, response]);
         setNomeUnidade("");
         CustomToast({ type: 'success', message: 'Unidade cadastrada com sucesso!' });
+        handleCloseCadastroUnidade();
+        buscarUnidadesCadastradas();
       }
     } catch (error) {
       console.error("Erro ao cadastrar unidade:", error);
@@ -146,7 +148,7 @@ const Unidades = () => {
   };
 
   const unidadesFiltradas = unidades.filter(unidade =>
-    unidade.nome.toLowerCase().includes(filtroNome.toLowerCase())
+    unidade.nome && unidade.nome.toLowerCase().includes(filtroNome.toLowerCase())
   );
 
   const handleInactivateUnidade = async (row) => {

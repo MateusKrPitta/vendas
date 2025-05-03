@@ -8,10 +8,10 @@ import SelectTextFields from "../../../components/select";
 import Checkbox from '@mui/material/Checkbox';
 import MenuMobile from "../../../components/menu-mobile";
 import ModalLateral from "../../../components/modal-lateral";
-import { Edit } from '@mui/icons-material';
+import { Close, Edit, LocationOn } from '@mui/icons-material';
 import TableLoading from "../../../components/loading/loading-table/loading";
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { FormControlLabel, IconButton, InputAdornment, TextField } from '@mui/material';
+import { Box, Chip, FormControlLabel, IconButton, InputAdornment, TextField } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -30,6 +30,7 @@ import { reativaUsuario } from "../../../service/reativa/usuario";
 import { motion } from 'framer-motion';
 
 const Usuario = () => {
+  const [unidadesSelecionadas, setUnidadesSelecionadas] = useState([]); // Agora é um array
   const [editando, setEditando] = useState(false);
   const [editandoUsuario, setEditandoUsuario] = useState(false);
   const [cadastroUsuario, setCadastroUsuario] = useState(false);
@@ -57,6 +58,7 @@ const Usuario = () => {
   const CadastroUsuario = () => setCadastroUsuario(true);
   const FecharCadastroUsuario = () => {
     setCadastroUsuario(false);
+    limparCampos();
   };
 
 
@@ -79,17 +81,43 @@ const Usuario = () => {
     }
   };
 
+  const limparCampos = () => {
+    setNomeCompleto('');
+    setEmail('');
+    setSenha('');
+    setUnidadesSelecionadas([]);
+    setPermissao(null);
+    setUnidadeSelecionada(null);
+    setEditUser(null);
+  };
+
   const buscarUsuariosCadastrados = async () => {
     try {
       setLoading(true);
       const response = await buscarUsuarios();
       const usuariosFormatados = response.map(usuario => {
-        const unidade = unidades.find(u => u.value === usuario.unidadeId);
+        // Unidade principal (se existir)
+        const unidadePrincipal = usuario.unidadeId 
+          ? unidades.find(u => u.value === usuario.unidadeId) 
+          : null;
+        
+        // Unidades adicionais
+        const unidadesAdicionais = usuario.unidades || [];
+        
+        // Combina todas as unidades (principal + adicionais)
+        const todasUnidades = [
+          ...(unidadePrincipal ? [unidadePrincipal.label] : []),
+          ...unidadesAdicionais.map(u => u.nome)
+        ];
+        
+        // Junta os nomes das unidades em uma string separada por vírgula
+        const unidadesTexto = todasUnidades.join(', ') || 'Sem unidade';
+        
         return {
           id: usuario.id,
           nome: usuario.fullName || 'Nome não disponível',
           email: usuario.email || 'Email não disponível',
-          unidade: unidade ? unidade.label : 'Unidade não disponível',
+          unidade: unidadesTexto,
           ativo: usuario.ativo ? 'Ativo' : 'Inativo',
           tipo: usuario.tipo
         };
@@ -105,7 +133,7 @@ const Usuario = () => {
 
   const CadastrarUsuario = async () => {
     try {
-      await criarUsuario(nomeCompleto, email, senha, unidadeSelecionada, permissao);
+      await criarUsuario(nomeCompleto, email, senha, unidadesSelecionadas, permissao);
       CustomToast('Usuário cadastrado com sucesso!', 'success');
       setCadastroUsuario(false);
       buscarUsuariosCadastrados();
@@ -163,6 +191,10 @@ const Usuario = () => {
       console.error("Erro ao alterar status do usuário:", error);
       CustomToast('Erro ao alterar status do usuário!', 'error');
     }
+  };
+
+  const handleDeleteUnidade = (unidadeToDelete) => () => {
+    setUnidadesSelecionadas(unidadesSelecionadas.filter(unidade => unidade !== unidadeToDelete));
   };
 
   const filteredUsers = users.filter(user =>
@@ -323,18 +355,32 @@ const Usuario = () => {
                     />
 
                     <SelectTextFields
-                      width={'200px'}
-                      icon={<LocationOnIcon fontSize="small" />}
+                      width={'260px'}
+                      icon={<LocationOnOutlined fontSize="small" />}
                       label={'Unidades'}
                       backgroundColor={"#D9D9D9"}
-                      borderRadius={'5px'}
-                      name={"unidade"}
+                      name={"unidades"}
                       fontWeight={500}
-                      value={unidadeSelecionada}
-                      onChange={(event) => setUnidadeSelecionada(event.target.value)}
-
+                      value={unidadesSelecionadas}
+                      onChange={(e) => setUnidadesSelecionadas(e.target.value)}
                       options={unidades}
+                      multiple // Permite seleção múltipla
                     />
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, ml: 1 }}>
+                      {unidadesSelecionadas.map((unidadeId) => {
+                        const unidade = unidades.find(u => u.value === unidadeId);
+                        return (
+                          <Chip
+                            key={unidadeId}
+                            label={unidade ? unidade.label : 'Unidade não encontrada'}
+                            onDelete={handleDeleteUnidade(unidadeId)}
+                            deleteIcon={<IconButton size="small"><Close fontSize="small" /></IconButton>}
+                            variant="outlined"
+                            size="small"
+                          />
+                        );
+                      })}
+                    </Box>
                   </div>
 
 
@@ -451,17 +497,17 @@ const Usuario = () => {
                           ),
                         }}
                       />
-
                       <SelectTextFields
                         width={'260px'}
                         icon={<LocationOnOutlined fontSize="small" />}
-                        label={'Unidade'}
+                        label={'Unidades'}
                         backgroundColor={"#D9D9D9"}
-                        name={"unidade"}
+                        name={"unidades"}
                         fontWeight={500}
-                        value={unidadeSelecionada}
-                        onChange={(e) => setUnidadeSelecionada(e.target.value)}
+                        value={unidadesSelecionadas}
+                        onChange={(e) => setUnidadesSelecionadas(e.target.value)}
                         options={unidades}
+                        multiple // Permite seleção múltipla
                       />
                     </div>
                     <div className="w-full flex items-center mt-4 ml-2 font-bold mb-1">

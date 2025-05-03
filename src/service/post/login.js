@@ -1,22 +1,29 @@
-import CustomToast from "../../components/toast";
-import httpsInstance from "../url";
+import httpsInstance from '../url';
+import CustomToast from '../../components/toast';
 
-export const login = async (email, senha) => {
-    const https = httpsInstance();
-    try {
-        const response = await https.post('/login', {
-            email,
-            password: senha 
-        });
-        return response.data;
-    } catch (error) {
-        const errorMessage = error.response?.data?.errors
-            ? (typeof error.response.data.errors === 'string' 
-                ? error.response.data.errors 
-                : Object.values(error.response.data.errors).join(', '))
-            : error.response?.data?.message || 'Erro desconhecido';
-        
-        CustomToast.error(errorMessage);
-        throw error; 
-    }
+export const login = async (email, password) => {
+  const https = httpsInstance();
+  
+  try {
+    const response = await https.post('/login', {
+      email,
+      password
+    });
+    const apiData = response.data.data;
+    return {
+        status: true,
+        data: {
+          token: apiData.token, // Token direto, não precisa de .token
+          user: {
+            ...apiData.user,
+            unidades: apiData.user.unidades || []
+          }
+        }
+      };
+  } catch (error) {
+    return {
+      status: false,
+      message: error.response?.data?.message || 'Erro ao fazer login'
+    };
+  }
 };

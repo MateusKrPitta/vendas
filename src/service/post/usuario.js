@@ -1,7 +1,7 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const criarUsuario = async (fullName, email, password, unidadeId, tipo) => {
+export const criarUsuario = async (fullName, email, password, unidadesIds, tipo) => {
     const https = httpsInstance();
     const userData = localStorage.getItem('user');
     const token = userData ? JSON.parse(userData).token : null;
@@ -13,7 +13,11 @@ export const criarUsuario = async (fullName, email, password, unidadeId, tipo) =
 
     try {
         const response = await https.post('/usuarios', {
-            fullName, email, password, unidadeId, tipo,
+            fullName, 
+            email, 
+            password, 
+            unidadesIds, // Agora envia um array de IDs
+            tipo,
         }, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -23,7 +27,7 @@ export const criarUsuario = async (fullName, email, password, unidadeId, tipo) =
 
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.message || error.response?.data?.success || "Erro ao cadastrar unidade";
+        const errorMessage = error.response?.data?.message || "Erro ao cadastrar usuário";
         CustomToast({ type: "error", message: errorMessage });
         throw error;
     }
