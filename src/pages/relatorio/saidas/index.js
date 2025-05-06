@@ -84,12 +84,20 @@ const RelatorioSaidas = () => {
   }, {});
 
   const colunasSaidas = [
-    { key: 'descricao', label: 'Descrição', width: 200 },
+    { 
+      key: 'descricao', 
+      label: 'Descrição', 
+      width: 200 
+    },
     {
       key: 'valor',
       label: 'Valor',
       width: 120,
-      valueGetter: (params) => formatarMoeda(params.row.valor)
+      renderCell: (params) => (
+        <span style={{ fontWeight: 'bold' }}>
+          {formatarMoeda(params.row.valor)}
+        </span>
+      )
     },
     {
       key: 'formaPagamento',
@@ -112,6 +120,7 @@ const RelatorioSaidas = () => {
       valueGetter: (params) => formatarData(params.row.data)
     }
   ];
+  
 
   return (
     <div className="flex w-full">
@@ -218,18 +227,20 @@ const RelatorioSaidas = () => {
                           <div className="p-4 bg-white">
                             <div style={{ height: 400, width: '100%' }}>
                               {relatorio.saidas && relatorio.saidas.length > 0 ? (
-                                <TableComponent
-                                  headers={colunasSaidas}
-                                  rows={relatorio.saidas.map(saida => ({
-                                    id: saida.id,
-                                    descricao: saida.descricao,
-                                    valor: saida.valor,
-                                    formaPagamento: saida.formaPagamento,
-                                    data: saida.data
-                                  }))}
-                                  pageSize={5}
-                                  checkboxSelection={false}
-                                />
+                               <TableComponent
+                               headers={colunasSaidas}
+                               rows={relatorio.saidas.map(saida => ({
+                                 ...saida,
+                                 // Garante que o valor é um número
+                                 valor: Number(saida.valor),
+                                 // Mantém os outros campos
+                                 descricao: saida.descricao,
+                                 formaPagamento: saida.formaPagamento,
+                                 data: saida.data
+                               }))}
+                               pageSize={5}
+                               checkboxSelection={false}
+                             />
                               ) : (
                                 <div className="flex items-center justify-center h-full">
                                   Nenhuma saída encontrada para este período

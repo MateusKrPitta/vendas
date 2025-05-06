@@ -18,14 +18,19 @@ import ModalLateral from '../../../components/modal-lateral';
 import { atualizarCategoria } from '../../../service/put/categoria';
 import { Edit, SaveAlt } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { inativaCategoria } from '../../../service/patch/categoria-inativa';
+import { ativaCategoria } from '../../../service/patch/categoria-ativa';
+
 const Categoria = () => {
     const { unidadeId } = useUnidade();
     const [categoriaEditando, setCategoriaEditando] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [todasCategorias, setTodasCategorias] = useState([]);
     const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
     const [cadastrarCategoria, setCadastrarCategoria] = useState(false);
     const [editando, setEditando] = useState(false);
     const [nomeCategoria, setNomeCategoria] = useState("");
+    const [busca, setBusca] = useState("");
 
     const Editar = (categoria) => {
         setCategoriaEditando(categoria);
@@ -107,11 +112,50 @@ const Categoria = () => {
         }
     };
 
+    const handleToggleStatus = async (categoria) => {
+        try {
+            if (categoria.ativo) {
+                await inativaCategoria(categoria.id);
+                CustomToast({ type: "success", message: "Categoria inativada com sucesso!" });
+            } else {
+                await ativaCategoria(categoria.id);
+                CustomToast({ type: "success", message: "Categoria ativada com sucesso!" });
+            }
+            listaCategorias(); // Atualiza a lista após a mudança de status
+        } catch (error) {
+            console.error("Erro ao alterar status da categoria:", error);
+            CustomToast({
+                type: "error",
+                message: error.response?.data?.message || "Erro ao alterar status da categoria!"
+            });
+        }
+    };
+
+    const filtrarCategorias = (textoBusca) => {
+        if (!textoBusca) {
+            setCategoriasFiltradas(todasCategorias);
+            return;
+        }
+
+        const filtradas = todasCategorias.filter(categoria =>
+            categoria.nome.toLowerCase().includes(textoBusca.toLowerCase())
+        );
+
+        setCategoriasFiltradas(filtradas);
+    };
+
+    const handleBuscaChange = (e) => {
+        const texto = e.target.value;
+        setBusca(texto);
+        filtrarCategorias(texto);
+    };
+
+
     useEffect(() => {
-
-        listaCategorias();
-    }, []); // O array vazio significa que isso será executado apenas uma vez quando o componente for montado
-
+        if (unidadeId) { // Só busca categorias se unidadeId estiver definido
+            listaCategorias();
+        }
+    }, [unidadeId]);
     const fadeIn = {
         hidden: { opacity: 0 },
         visible: { opacity: 1 },
@@ -166,17 +210,25 @@ const Categoria = () => {
 
                             <div className='w-full'>
                                 {loading ? (
-                                    <div>Loading...</div> // Você pode substituir isso por um componente de loading mais elaborado
+                                    <div>Loading...</div>
                                 ) : (
-                                    <TableComponent
-                                        headers={categorias}
-                                        rows={categoriasFiltradas}
-                                        actionsLabel={"Ações"}
-                                        actionCalls={{
-                                            edit: Editar,
-                                            delete: '',
-                                        }}
-                                    />
+                                    <>
+                                        {categoriasFiltradas.length === 0 ? (
+                                            <div className="mt-4 text-center text-gray-500">
+                                                {busca ? "Nenhuma categoria encontrada com esse nome." : "Nenhuma categoria cadastrada."}
+                                            </div>
+                                        ) : (
+                                            <TableComponent
+                                                headers={categorias}
+                                                rows={categoriasFiltradas}
+                                                actionsLabel={"Ações"}
+                                                actionCalls={{
+                                                    edit: Editar,
+                                                    inactivate: handleToggleStatus
+                                                }}
+                                            />
+                                        )}
+                                    </>
                                 )}
                             </div>
 

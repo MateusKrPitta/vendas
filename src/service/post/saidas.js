@@ -26,7 +26,7 @@ export const criarSaidas = async (saidaData) => {
 
         CustomToast({ 
             type: "success", 
-            message: "Venda cadastrada com sucesso!" 
+            message: "Saída cadastrada com sucesso!" 
         });
         return response.data;
     } catch (error) {

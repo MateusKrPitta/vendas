@@ -1,7 +1,7 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const atualizarSaidas = async (id, descricao, valor, forma_pagamento) => { // Mantenha como forma_pagamento
+export const atualizarSaidas = async (id, descricao, valor, forma_pagamento, unidade_id) => { // Mantenha como forma_pagamento
   const https = httpsInstance();
   const userData = localStorage.getItem('user');
   const token = userData ? JSON.parse(userData).token : null;
@@ -12,7 +12,8 @@ export const atualizarSaidas = async (id, descricao, valor, forma_pagamento) => 
       { 
         descricao, 
         valor: Number(valor),
-        forma_pagamento: Number(forma_pagamento) // Mantenha o mesmo nome
+        forma_pagamento: Number(forma_pagamento),
+        unidade_id
       },
       {
         headers: {

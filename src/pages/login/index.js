@@ -32,46 +32,42 @@ const LoginPage = () => {
             CustomToast({ type: "error", message: 'Por favor, preencha todos os campos' });
             return;
         }
-    
+
         setLoading(true);
-    
+
         try {
             const response = await login(email, senha);
-            
+
             if (response.status) {
                 const { token, user } = response.data;
-    
-                // Armazena os dados do usuário
+
                 localStorage.setItem('user', JSON.stringify({
                     token: token.token,
                     fullName: user.fullName,
                     tipo: user.tipo,
-                    unidades: user.unidades
+                    unidades: user.unidades 
                 }));
-    
-                CustomToast({ 
-                    type: "success", 
-                    message: 'Seja bem vindo!' 
+        
+
+                CustomToast({
+                    type: "success",
+                    message: 'Seja bem vindo!'
                 });
-                
+
                 // Redireciona para o dashboard
                 navigate('/dashboard', { replace: true });
-                
-                // Armazena a primeira unidade se existir
-                if (user.unidades.length > 0) {
-                    localStorage.setItem('selectedUnidade', JSON.stringify(user.unidades[0]));
-                }
+
             } else {
-                CustomToast({ 
-                    type: "error", 
-                    message: response.message || 'Erro no login' 
+                CustomToast({
+                    type: "error",
+                    message: response.message || 'Erro no login'
                 });
             }
         } catch (error) {
             console.error('Erro no login:', error);
-            CustomToast({ 
-                type: "error", 
-                message: error.response?.data?.message || 'Erro ao conectar com o servidor' 
+            CustomToast({
+                type: "error",
+                message: error.response?.data?.message || 'Erro ao conectar com o servidor'
             });
         } finally {
             setLoading(false);

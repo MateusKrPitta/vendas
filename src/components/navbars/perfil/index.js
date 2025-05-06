@@ -25,8 +25,8 @@ const style = {
 };
 
 const HeaderPerfil = () => {
-  
-  const { unidadeId, atualizarUnidade } = useUnidade();
+
+  const { unidadeId, unidadeStatus, atualizarUnidade } = useUnidade();
   const navigate = useNavigate();
   const [mensagemErro, setMensagemErro] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
@@ -60,30 +60,25 @@ const HeaderPerfil = () => {
     try {
       setLoading(true);
       const response = await buscarUnidades();
-      console.log('Dados brutos da API:', response);
 
       if (Array.isArray(response)) {
-
         const unidadesFormatadas = response
-          .filter(u => u.id === userData?.unidadeId) 
+          .filter(u => userData?.unidades?.some(userUnidade => userUnidade.id === u.id))
           .map(u => ({
             value: u.id,
             label: u.nome,
             ativo: u.ativo
           }));
 
-        console.log('Unidades formatadas para select:', unidadesFormatadas);
         setUnidades(unidadesFormatadas);
-        
 
         if (unidadesFormatadas.length > 0 && !unidadeId) {
-          atualizarUnidade(unidadesFormatadas[0].value);
+          // Atualiza tanto o ID quanto o status
+          atualizarUnidade(unidadesFormatadas[0].value, unidadesFormatadas[0].ativo);
         }
       }
     } catch (error) {
-      console.error('Erro ao buscar unidades:', error);
-      setMensagemErro(error.message || "Erro ao buscar unidades");
-      setIsVisible(true);
+      // ... tratamento de erro ...
     } finally {
       setLoading(false);
     }
@@ -94,8 +89,10 @@ const HeaderPerfil = () => {
   }, []);
 
   const handleUnidadeChange = (event) => {
-    const novaUnidadeId = event.target.value;
-    atualizarUnidade(novaUnidadeId); 
+    const selectedUnidade = unidades.find(u => u.value === event.target.value);
+    if (selectedUnidade) {
+      atualizarUnidade(selectedUnidade.value, selectedUnidade.ativo);
+    }
   };
 
   return (
@@ -115,8 +112,8 @@ const HeaderPerfil = () => {
                 borderRadius={'5px'}
                 name={"unidade"}
                 fontWeight={500}
-                value={unidadeId || ''} 
-                onChange={handleUnidadeChange} 
+                value={unidadeId || ''}
+                onChange={handleUnidadeChange}
                 options={unidades}
                 disabled={unidades.length === 1}
               />

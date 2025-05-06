@@ -24,8 +24,11 @@ import {
   Box,
   Chip
 } from '@mui/material';
+import { useUnidade } from '../../../contexts';
+import CustomToast from '../../../components/toast';
 
 const RelatorioVendas = () => {
+  const { unidadeId } = useUnidade();
   const [relatorios, setRelatorios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,22 +53,37 @@ const RelatorioVendas = () => {
 
   const carregarRelatorios = async () => {
     try {
-      const dados = await buscarRelatorioVendas();
-      const dadosOrdenados = dados.data.sort((a, b) => {
+      setLoading(true);
+      const response = await buscarRelatorioVendas();
+
+      // Verifica se a resposta é válida e contém a propriedade data
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error("Dados de relatório inválidos");
+      }
+
+      // Ordena por ano e mês
+      const dadosOrdenados = response.data.sort((a, b) => {
         if (a.ano !== b.ano) return b.ano - a.ano;
         return b.mes - a.mes;
       });
+
       setRelatorios(dadosOrdenados);
       setLoading(false);
     } catch (err) {
       setError(err.message);
       setLoading(false);
+      CustomToast({
+        type: "error",
+        message: `Erro ao carregar relatórios: ${err.message}`
+      });
     }
   };
 
   useEffect(() => {
-    carregarRelatorios();
-  }, []);
+    if (unidadeId) { // Só carrega se tiver unidadeId
+      carregarRelatorios();
+    }
+  }, [unidadeId]);
 
   // Agrupar relatórios por ano com totais calculados
   const relatoriosPorAno = relatorios.reduce((acc, relatorio) => {
@@ -78,48 +96,47 @@ const RelatorioVendas = () => {
         totalValor: 0
       };
     }
+
     acc[ano].meses.push(relatorio);
     acc[ano].totalVendas += relatorio.totalVendas;
     acc[ano].totalQuantidade += relatorio.totalQuantidade;
+
+    // Calcula o valor total do mês
     const totalValorMes = relatorio.vendas?.reduce((total, venda) => {
       return total + (venda.quantidade * venda.valor);
-    }, 0) || 0;
-    
+    }, 0) || relatorio.totalValor || 0;
+
     acc[ano].totalValor += totalValorMes;
-    
+
     return acc;
   }, {});
 
   const colunasVendas = [
-    { key: 'produto', label: 'Produto', width: 150 },
-    { key: 'quantidade', label: 'Quantidade', width: 120 },
+    { 
+      key: 'produto', 
+      label: 'Produto', 
+      width: 150 
+    },
+    { 
+      key: 'quantidade', 
+      label: 'Quantidade', 
+      width: 120,
+      align: 'center' // Alinha ao centro
+    },
     {
       key: 'valor',
-      label: 'Valor',
+      label: 'Valor Unitário',
       width: 120,
-      valueGetter: (params) => formatarMoeda(params.row.valorUnitario || params.row.valor)
+      align: 'right', // Alinha à direita
+      format: (value) => formatarMoeda(value) // Formatação direta
     },
     {
       key: 'valorTotal',
       label: 'Valor Total',
       width: 120,
-      valueGetter: (params) => formatarMoeda(params.row.valorTotal)
+      align: 'right', // Alinha à direita
+      format: (value) => formatarMoeda(value) // Formatação direta
     },
-    {
-      key: 'formaPagamento',
-      label: 'Pagamento',
-      width: 150,
-      valueGetter: (params) => {
-        const formas = {
-          1: 'Dinheiro',
-          2: 'PIX',
-          3: 'Débito',
-          4: 'Crédito'
-        };
-        return formas[params.row.formaPagamento] || 'Desconhecido';
-      }
-    },
-    
     {
       key: 'data',
       label: 'Data',
@@ -129,10 +146,9 @@ const RelatorioVendas = () => {
     {
       key: 'categoria',
       label: 'Categoria',
-      width: 150,
+      width: 150
     }
   ];
-
   return (
     <div className="flex w-full">
       <Navbar />
@@ -223,16 +239,8 @@ const RelatorioVendas = () => {
                     </div>
 
                     {dadosAno.meses.map((relatorio) => {
-                        console.log('Relatório:', {
-                          mes: relatorio.nomeMes,
-                          totalValorBackend: relatorio.totalValor,
-                          vendas: relatorio.vendas
-                        });
-                      // Calcula o valor total das vendas do mês para verificação
-                      const valorTotalCalculado = relatorio.vendas?.reduce((total, venda) => {
-                        return total + (venda.quantidade * venda.valor);
-                      }, 0) || 0;
-                      
+                      // Verifique a estrutura dos dados aqui
+                      console.log('Relatório:', relatorio);
 
                       return (
                         <Acordion
@@ -241,9 +249,11 @@ const RelatorioVendas = () => {
                             <div className="flex items-center gap-2">
                               <DateRange />
                               <label className="font-semibold text-xs">
-                                {relatorio.nomeMes} <label className='ml-5'> 
-                                {formatarMoeda(relatorio.totalValor)} | {relatorio.totalVendas} Vendas | {relatorio.totalQuantidade} Produtos
-                                
+                                {relatorio.nomeMes}
+                                <label className='ml-5'>
+                                  {formatarMoeda(relatorio.totalValor)} |
+                                  {relatorio.totalVendas} Vendas |
+                                  {relatorio.totalQuantidade} Produtos
                                 </label>
                               </label>
                             </div>
@@ -253,30 +263,25 @@ const RelatorioVendas = () => {
                               <div style={{ height: 400, width: '100%' }}>
                                 {relatorio.vendas && relatorio.vendas.length > 0 ? (
                                   <TableComponent
-                                    headers={colunasVendas}
-                                    rows={relatorio.vendas.map(venda => ({
-                                      id: venda.id,
-                                      produto: venda.produto,
-                                      quantidade: venda.quantidade,
-                                      valor: venda.valor,
-                                      formaPagamento: (() => {
-                                        const formas = {
-                                          1: 'Dinheiro',
-                                          2: 'PIX',
-                                          3: 'Débito',
-                                          4: 'Crédito'
-                                        };
-                                        return formas[venda.formaPagamento] || 'Desconhecido';
-                                      })(),
-                                      
-                                      data: formatarData(venda.data),
-
-                                      categoria: venda.categoria?.nome || 'Sem categoria',
-                                      valorTotal: venda.quantidade * venda.valor
-                                    }))}
-                                    pageSize={5}
-                                    checkboxSelection={false}
-                                  />
+                                  headers={colunasVendas}
+                                  rows={relatorio.vendas.map(venda => {
+                                    const valor = Number(venda.valor);
+                                    const quantidade = Number(venda.quantidade);
+                                    const valorTotal = valor * quantidade;
+                                    
+                                    return {
+                                      ...venda,
+                                      produto: venda.produto || venda.nome,
+                                      quantidade: quantidade,
+                                      valor: formatarMoeda(valor), // Já formata aqui
+                                      valorTotal: formatarMoeda(valorTotal), // Já formata aqui
+                                      data: formatarData(venda.data || venda.data_venda),
+                                      categoria: venda.categoria?.nome || venda.categoria || 'Sem categoria'
+                                    };
+                                  })}
+                                  pageSize={5}
+                                  checkboxSelection={false}
+                                />
                                 ) : (
                                   <div className="flex items-center justify-center h-full">
                                     Nenhuma venda encontrada para este período

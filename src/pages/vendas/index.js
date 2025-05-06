@@ -29,6 +29,7 @@ import { motion } from 'framer-motion';
 
 const Vendas = () => {
     const { unidadeId } = useUnidade();
+    console.log("Unidade ID atual:", unidadeId);
     const [produto, setProduto] = useState('');
     const [vendaEditando, setVendaEditando] = useState(null);
     const [erros, setErros] = useState({});
@@ -127,37 +128,47 @@ const Vendas = () => {
             valor: valor,
             forma_pagamento: Number(formaPagamento),
             unidade_id: Number(unidadeId),
-            categoria_id: Number(categoriaSelecionada), // Adicione esta linha
+            categoria_id: Number(categoriaSelecionada),
             data_venda: new Date(data).toISOString()
         };
 
         try {
             await criarVendas(vendaData);
-            CustomToast({ type: "success", message: "Venda cadastrada com sucesso!" });
             limparCampos();
-            buscarVendasDoDia(data);
+            buscarVendasDoDia(data); // Recarrega as vendas após adicionar
         } catch (error) {
             console.error("Erro ao adicionar venda:", error);
-            CustomToast({ type: "error", message: error.message || "Erro ao cadastrar venda" });
         }
     };
 
     const salvarEdicao = async () => {
         try {
-
-            const dataISO = vendaEditando.data_venda
-                ? new Date(vendaEditando.data_venda).toISOString()
-                : new Date().toISOString();
-
+            // Corrigindo o formato da data
+            let dataISO;
+            if (vendaEditando.data_venda) {
+                // Se já estiver no formato ISO, usa diretamente
+                if (vendaEditando.data_venda.includes('T')) {
+                    dataISO = vendaEditando.data_venda;
+                } else {
+                    // Se for apenas a data (YYYY-MM-DD), adiciona o horário
+                    dataISO = new Date(vendaEditando.data_venda).toISOString();
+                }
+            } else {
+                // Se não houver data, usa a data atual
+                dataISO = new Date().toISOString();
+            }
+    
             await atualizarVendas(
                 vendaEditando.id,
-                vendaEditando.produto || vendaEditando.nome,
+                vendaEditando.nome,
                 Number(vendaEditando.quantidade),
                 Number(vendaEditando.valor),
-                Number(vendaEditando.formaPagamento || vendaEditando.forma_pagamento),
+                Number(vendaEditando.forma_pagamento),
+                Number(unidadeId),
+                Number(vendaEditando.categoria_id),
                 dataISO
             );
-
+    
             CustomToast({ type: "success", message: "Venda atualizada com sucesso!" });
             setEditando(false);
             setVendaEditando(null);
@@ -172,13 +183,8 @@ const Vendas = () => {
     const buscarVendasDoDia = async (data) => {
         setCarregando(true);
         try {
-            const response = await buscarVendas(data);
-
-
-            const vendasData = response.data?.vendas || [];
-
-
-            setVendas(vendasData);
+            const response = await buscarVendas(data, unidadeId);
+            setVendas(response.data?.vendas || []);
         } catch (error) {
             console.error("Erro ao buscar vendas:", error);
             CustomToast({ type: "error", message: "Erro ao carregar vendas" });
@@ -187,7 +193,7 @@ const Vendas = () => {
         }
     };
 
-
+    // Exemplo de ajuste no cálculo de totais
     const calcularTotais = () => {
         const totais = {
             pix: 0,
@@ -206,13 +212,9 @@ const Vendas = () => {
 
             totais.geral += totalVenda;
 
-            const formaPagamento = venda.forma_pagamento ?? venda.formaPagamento;
+            const formaPagamento = venda.formaPagamento; // Usando o campo da resposta da API
 
-            const formaPagamentoNum = typeof formaPagamento === 'string'
-                ? parseInt(formaPagamento, 10)
-                : formaPagamento;
-
-            switch (formaPagamentoNum) {
+            switch (formaPagamento) {
                 case 1:
                     totais.dinheiro += totalVenda;
                     break;
@@ -235,24 +237,20 @@ const Vendas = () => {
     const totais = calcularTotais();
 
     const dadosTabela = (vendas || []).map(venda => ({
-        id: venda.id || venda._id,
-        produto: venda.produto || venda.nome || '',
+        id: venda.id,
+        produto: venda.nome || '',
         quantidade: venda.quantidade || 0,
-        valor: venda.valor ? `R$ ${venda.valor.toFixed(2).replace('.', ',')}` : 'R$ 0,00',
-        formaPagamento: mapearFormaPagamento(venda.forma_pagamento || venda.formaPagamento) || '',
+        valor: venda.valor ? `R$ ${parseFloat(venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00',
+        formaPagamento: mapearFormaPagamento(venda.forma_pagamento) || '',
         total: venda.quantidade && venda.valor ?
-            `R$ ${(venda.quantidade * venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00'
+            `R$ ${(venda.quantidade * venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00',
+        categoria: venda.categoria?.nome || 'Sem categoria'
     }));
 
 
     const handleDelete = async (row) => {
         try {
-
-
-
-
             await deletarVendas(row.id);
-            CustomToast({ type: "success", message: "Venda deletada com sucesso!" });
             buscarVendasDoDia(data);
         } catch (error) {
             console.error("Erro ao deletar venda:", error);
@@ -263,10 +261,12 @@ const Vendas = () => {
 
 
     useEffect(() => {
-        const hoje = new Date().toISOString().split('T')[0];
-        setData(hoje);
-        buscarVendasDoDia(hoje);
-    }, []);
+        if (unidadeId) {
+            const hoje = new Date().toISOString().split('T')[0];
+            setData(hoje);
+            buscarVendasDoDia(hoje);
+        }
+    }, [unidadeId]);
 
     const carregarCategorias = async () => {
         setCarregandoCategorias(true);
@@ -282,12 +282,11 @@ const Vendas = () => {
         }
     };
 
-
     useEffect(() => {
-
-
-        carregarCategorias();
-    }, []);
+        if (unidadeId) {
+            carregarCategorias();
+        }
+    }, [unidadeId]);
 
     useEffect(() => {
         if (unidadeId && categorias.length > 0) {
@@ -443,14 +442,16 @@ const Vendas = () => {
                             sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '15%' }, }}
                         />
 
-                        <ButtonComponent
-                            startIcon={<AddCircleOutline fontSize='small' />}
-                            title={'Adicionar'}
-                            subtitle={'Adicionar'}
-                            onClick={adicionarVenda}
-                            disabled={!camposValidos()}
-                            buttonSize="large"
-                        />
+                        <div className='w-full flex items-end justify-end'>
+                            <ButtonComponent
+                                startIcon={<AddCircleOutline fontSize='small' />}
+                                title={'Adicionar'}
+                                subtitle={'Adicionar'}
+                                onClick={adicionarVenda}
+                                disabled={!camposValidos()}
+                                buttonSize="large"
+                            />
+                        </div>
                         <div className='w-full'>
                             <TableComponent
                                 headers={VendasProdutos}
@@ -635,24 +636,33 @@ const Vendas = () => {
                             ]}
                         />
 
-                        <TextField
-                            fullWidth
-                            type='date'
-                            variant="outlined"
-                            size="small"
-                            label="Data"
-                            value={vendaEditando?.data_venda?.split('T')[0] || data}
-                            onChange={(e) => setVendaEditando({ ...vendaEditando, data_venda: e.target.value })}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <DateRangeIcon fontSize='small' />
-                                    </InputAdornment>
-                                ),
-                            }}
-                            autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '44%' }, }}
-                        />
+<TextField
+    fullWidth
+    type='date'
+    variant="outlined"
+    size="small"
+    label="Data"
+    value={vendaEditando?.data_venda ? 
+        new Date(vendaEditando.data_venda).toISOString().split('T')[0] : 
+        data
+    }
+    onChange={(e) => {
+        const dateValue = e.target.value;
+        setVendaEditando({ 
+            ...vendaEditando, 
+            data_venda: dateValue ? new Date(dateValue).toISOString() : new Date().toISOString()
+        });
+    }}
+    InputProps={{
+        startAdornment: (
+            <InputAdornment position="start">
+                <DateRangeIcon fontSize='small' />
+            </InputAdornment>
+        ),
+    }}
+    autoComplete="off"
+    sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '44%' }, }}
+/>
 
                         <ButtonComponent
                             title={'Salvar'}

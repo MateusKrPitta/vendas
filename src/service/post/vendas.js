@@ -1,7 +1,7 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const criarVendas = async (vendaData, limparCampos) => {
+export const criarVendas = async (vendaData) => {
     const https = httpsInstance();
     const userData = localStorage.getItem('user');
     const token = userData ? JSON.parse(userData).token : null;
@@ -22,12 +22,6 @@ export const criarVendas = async (vendaData, limparCampos) => {
             type: "success", 
             message: "Venda cadastrada com sucesso!" 
         });
-
-
-        if (limparCampos && typeof limparCampos === 'function') {
-            limparCampos();
-        }
-
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || 

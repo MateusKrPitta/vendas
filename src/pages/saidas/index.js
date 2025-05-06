@@ -56,46 +56,34 @@ const Saidas = () => {
         return formas[codigo] || codigo;
     };
 
-    const handleEdit = (saida) => {
-        setSaidaEditando(saida);
-        setEditando(true);
-        setFormularioEdicao({
-            descricao: saida.descricao,
-            valor: saida.valorOriginal, // Usar o valor original, não o formatado
-            forma_pagamento: String(saida.formaPagamentoOriginal), // Usar o original
-            unidade_id: unidadeId
-        });
-    };
+
     const buscaSaidas = async () => {
         try {
             setLoading(true);
             const response = await buscarSaidas();
 
-            // Verifica se a resposta tem dados e a estrutura esperada
-            if (!response || !response.length || !response[0].saidas) {
+            if (!response || !response.length) {
                 setSaidas([]);
                 setLoading(false);
                 return;
             }
 
-            // Extrai todas as saídas de todos os objetos da resposta
-            const todasSaidas = response.flatMap(item => item.saidas);
+            const todasSaidas = response.flatMap(item => item.saidas || []);
+            const saidasDaUnidade = todasSaidas.filter(saida => saida.unidade_id == unidadeId);
 
-            const transformedData = todasSaidas
-                .filter(saida => saida.unidade_id == unidadeId)
-                .map(saida => ({
-                    id: saida.id,
-                    descricao: saida.descricao,
-                    valor: new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                    }).format(saida.valor),
-                    formaPagamento: mapearFormaPagamento(saida.forma_pagamento),
-                    data: saida.data_registro ? new Date(saida.data_registro).toLocaleDateString('pt-BR') : '-',
-                    // Manter os valores originais para cálculos
-                    valorOriginal: saida.valor,
-                    formaPagamentoOriginal: saida.forma_pagamento
-                }));
+            const transformedData = saidasDaUnidade.map(saida => ({
+                id: saida.id,
+                descricao: saida.descricao,
+                valor: new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(saida.valor),
+                formaPagamento: mapearFormaPagamento(saida.forma_pagamento),
+                data: saida.data_registro ? new Date(saida.data_registro).toLocaleDateString('pt-BR') : '-',
+                valorOriginal: saida.valor,
+                formaPagamentoOriginal: saida.forma_pagamento,
+                unidadeId: saida.unidade_id
+            }));
 
             setSaidas(transformedData);
             setLoading(false);
@@ -105,6 +93,7 @@ const Saidas = () => {
             CustomToast({ type: "error", message: "Erro ao carregar saídas" });
         }
     };
+
     const handleSave = async () => {
         try {
             if (!unidadeId) {
@@ -112,8 +101,15 @@ const Saidas = () => {
                 return;
             }
 
-            await criarSaidas(formularioPrincipal);
-            CustomToast({ type: "success", message: "Saída cadastrada com sucesso!" });
+
+            const valorNumerico = Number(formularioPrincipal.valor) || 0;
+
+            await criarSaidas({
+                ...formularioPrincipal,
+                valor: valorNumerico,
+                unidade_id: unidadeId
+            });
+
 
             setFormularioPrincipal({
                 descricao: '',
@@ -125,43 +121,33 @@ const Saidas = () => {
             await buscaSaidas();
         } catch (error) {
             console.error("Erro ao salvar saída:", error);
-            CustomToast({ type: "error", message: error.message || "Erro ao cadastrar saída" });
+            CustomToast({
+                type: "error",
+                message: error.response?.data?.message
+            });
         }
     };
 
     const handleAtualizar = async () => {
         try {
-            if (!saidaEditando) {
-                CustomToast({ type: "error", message: "Nenhuma saída selecionada para edição" });
+            if (!saidaEditando || !unidadeId) {
+                CustomToast({ type: "error", message: "Dados incompletos para edição" });
                 return;
             }
-    
-            // Verifica se os valores estão preenchidos
-            if (!formularioEdicao.valor || !formularioEdicao.forma_pagamento) {
-                CustomToast({ type: "error", message: "Preencha todos os campos obrigatórios" });
-                return;
-            }
-            console.log('Dados sendo enviados:', {
-                id: saidaEditando.id,
-                descricao: formularioEdicao.descricao,
-                valor: Number(formularioEdicao.valor),
-                forma_pagamento: Number(formularioEdicao.forma_pagamento)
-            });
-    
+
             await atualizarSaidas(
                 saidaEditando.id,
                 formularioEdicao.descricao,
                 Number(formularioEdicao.valor),
-                Number(formularioEdicao.forma_pagamento)
+                Number(formularioEdicao.forma_pagamento),
+                unidadeId 
             );
-    
-            CustomToast({ type: "success", message: "Saída atualizada com sucesso!" });
+
             await buscaSaidas();
             setEditando(false);
             setSaidaEditando(null);
         } catch (error) {
-            console.error("Erro ao atualizar saída:", error);
-            CustomToast({ type: "error", message: error.message || "Erro ao atualizar saída" });
+            CustomToast({ type: "error", message: error.message  });
         }
     };
 

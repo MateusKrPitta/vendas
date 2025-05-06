@@ -8,9 +8,8 @@ import SelectTextFields from "../../../components/select";
 import Checkbox from '@mui/material/Checkbox';
 import MenuMobile from "../../../components/menu-mobile";
 import ModalLateral from "../../../components/modal-lateral";
-import { Close, Edit, LocationOn } from '@mui/icons-material';
+import { Close, Edit, } from '@mui/icons-material';
 import TableLoading from "../../../components/loading/loading-table/loading";
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Box, Chip, FormControlLabel, IconButton, InputAdornment, TextField } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
@@ -30,41 +29,27 @@ import { reativaUsuario } from "../../../service/reativa/usuario";
 import { motion } from 'framer-motion';
 
 const Usuario = () => {
-  const [unidadesSelecionadas, setUnidadesSelecionadas] = useState([]); // Agora é um array
+
   const [editando, setEditando] = useState(false);
-  const [editandoUsuario, setEditandoUsuario] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [cadastroUsuario, setCadastroUsuario] = useState(false);
   const [editUser, setEditUser] = useState(null);
+  const [permissao, setPermissao] = useState(null);
+  const [unidadeSelecionada, setUnidadeSelecionada] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
-  const [mensagemErro, setMensagemErro] = useState('');
-  const [unidadeSelecionada, setUnidadeSelecionada] = useState(null);
+  const [unidadesSelecionadas, setUnidadesSelecionadas] = useState([]);
+  const [unidades, setUnidades] = useState([]);
+
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [permissao, setPermissao] = useState(null);
 
-  const [loading, setLoading] = useState(false);
-
-  const [unidades, setUnidades] = useState([]);
-
-
-  const handleCloseEditUser = () => {
-    setEditandoUsuario(false);
-  };
-
-
-
-  const CadastroUsuario = () => setCadastroUsuario(true);
   const FecharCadastroUsuario = () => {
     setCadastroUsuario(false);
     limparCampos();
   };
 
-
-  const Editar = () => {
-    setEditando(true);
-  };
 
   const buscarUnidadesCadastradas = async () => {
     try {
@@ -96,23 +81,19 @@ const Usuario = () => {
       setLoading(true);
       const response = await buscarUsuarios();
       const usuariosFormatados = response.map(usuario => {
-        // Unidade principal (se existir)
-        const unidadePrincipal = usuario.unidadeId 
-          ? unidades.find(u => u.value === usuario.unidadeId) 
+        const unidadePrincipal = usuario.unidadeId
+          ? unidades.find(u => u.value === usuario.unidadeId)
           : null;
-        
-        // Unidades adicionais
+
         const unidadesAdicionais = usuario.unidades || [];
-        
-        // Combina todas as unidades (principal + adicionais)
+
         const todasUnidades = [
           ...(unidadePrincipal ? [unidadePrincipal.label] : []),
           ...unidadesAdicionais.map(u => u.nome)
         ];
-        
-        // Junta os nomes das unidades em uma string separada por vírgula
+
         const unidadesTexto = todasUnidades.join(', ') || 'Sem unidade';
-        
+
         return {
           id: usuario.id,
           nome: usuario.fullName || 'Nome não disponível',
@@ -162,18 +143,23 @@ const Usuario = () => {
     }
   };
 
+  const handleCloseEdicao = () => {
+    setEditando(false);
+    limparCampos(); // Adicione esta linha para limpar os campos ao fechar
+  };
+
   const handleEditClick = (user) => {
     setEditUser(user);
     setNomeCompleto(user.nome);
     setEmail(user.email);
     setSenha('');
 
+    const unidadesDoUsuario = user.unidade.split(', ').map(nome => {
+      return unidades.find(u => u.label === nome)?.value;
+    }).filter(Boolean);
 
-    const unidadeCorrespondente = unidades.find(u => u.label === user.unidade);
-    setUnidadeSelecionada(unidadeCorrespondente ? unidadeCorrespondente.value : null);
-
+    setUnidadesSelecionadas(unidadesDoUsuario);
     setPermissao(user.tipo);
-
     setEditando(true);
   };
 
@@ -181,15 +167,12 @@ const Usuario = () => {
     try {
       if (user.ativo === "Ativo" || user.ativo === true) {
         await inativarUsuario(user.id);
-        CustomToast('Usuário inativado com sucesso!', 'success');
       } else {
         await reativaUsuario(user.id);
-        CustomToast('Usuário reativado com sucesso!', 'success');
       }
       buscarUsuariosCadastrados();
     } catch (error) {
       console.error("Erro ao alterar status do usuário:", error);
-      CustomToast('Erro ao alterar status do usuário!', 'error');
     }
   };
 
@@ -364,7 +347,7 @@ const Usuario = () => {
                       value={unidadesSelecionadas}
                       onChange={(e) => setUnidadesSelecionadas(e.target.value)}
                       options={unidades}
-                      multiple // Permite seleção múltipla
+                      multiple
                     />
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, ml: 1 }}>
                       {unidadesSelecionadas.map((unidadeId) => {
@@ -433,7 +416,7 @@ const Usuario = () => {
 
               <ModalLateral
                 open={editando}
-                handleClose={() => setEditando(false)}
+                handleClose={handleCloseEdicao}
                 tituloModal="Editar Usuário"
                 icon={<Edit />}
                 tamanhoTitulo="75%"
@@ -507,7 +490,7 @@ const Usuario = () => {
                         value={unidadesSelecionadas}
                         onChange={(e) => setUnidadesSelecionadas(e.target.value)}
                         options={unidades}
-                        multiple // Permite seleção múltipla
+                        multiple
                       />
                     </div>
                     <div className="w-full flex items-center mt-4 ml-2 font-bold mb-1">
