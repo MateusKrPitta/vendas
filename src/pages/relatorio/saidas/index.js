@@ -66,7 +66,6 @@ const RelatorioSaidas = () => {
     carregarRelatorios();
   }, []);
 
-  // Agrupar relatórios por ano com totais calculados
   const relatoriosPorAno = relatorios.reduce((acc, relatorio) => {
     const ano = relatorio.ano;
     if (!acc[ano]) {
@@ -231,9 +230,9 @@ const RelatorioSaidas = () => {
                                headers={colunasSaidas}
                                rows={relatorio.saidas.map(saida => ({
                                  ...saida,
-                                 // Garante que o valor é um número
+                           
                                  valor: Number(saida.valor),
-                                 // Mantém os outros campos
+                           
                                  descricao: saida.descricao,
                                  formaPagamento: saida.formaPagamento,
                                  data: saida.data

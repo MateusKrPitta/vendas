@@ -1,7 +1,7 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const criarCategoria = async (nome, unidade_id) => {
+export const criarListaCompra = async (produto, quantidade, unidadeId) => {
     const https = httpsInstance();
     const userData = localStorage.getItem('user');
     const token = userData ? JSON.parse(userData).token : null;
@@ -12,19 +12,20 @@ export const criarCategoria = async (nome, unidade_id) => {
     }
 
     try {
-        const response = await https.post('/categorias', 
-            { nome, unidade_id }, 
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        const response = await https.post('/lista-compras', {
+            produto, 
+            quantidade,
+            unidadeId
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
 
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.message || "Erro ao cadastrar categoria";
+        const errorMessage = error.response?.data?.message || "Erro ao cadastrar item na lista";
         CustomToast({ type: "error", message: errorMessage });
         throw error;
     }

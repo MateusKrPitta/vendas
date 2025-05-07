@@ -1,12 +1,12 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const buscarRelatorioVendas = async (unidadeId) => {
+export const buscarDashboard = async (unidadeId) => {
     const https = httpsInstance();
     const userData = localStorage.getItem('user');
     const token = userData ? JSON.parse(userData).token : null;
     try {
-        const response = await https.get(`/relatorios-mensais/unidade/${unidadeId}`, {
+        const response = await https.get(`/dashboard/${unidadeId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

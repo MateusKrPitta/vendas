@@ -88,7 +88,7 @@ const Navbar = ({ user }) => {
                             <span>Saídas</span>
                         </button>
                        
-
+                        {!isUsuarioTipo3 && (
                         <button
                             onClick={() => handleNavigate("/relatorio")}
                             className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/relatorios" ? "border-b-2 border-secundary" : ""}`}
@@ -97,7 +97,7 @@ const Navbar = ({ user }) => {
                             <DataThresholdingIcon fontSize={"small"} />
                             <span>Relatório</span>
                         </button>
-
+                        )}
 
                         <label className="text-sm mt-1 text-primary font-bold">Configurações</label>
                         <button

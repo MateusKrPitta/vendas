@@ -20,6 +20,7 @@ import { Edit, SaveAlt } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { inativaCategoria } from '../../../service/patch/categoria-inativa';
 import { ativaCategoria } from '../../../service/patch/categoria-ativa';
+import TableLoading from '../../../components/loading/loading-table/loading';
 
 const Categoria = () => {
     const { unidadeId } = useUnidade();
@@ -50,12 +51,11 @@ const Categoria = () => {
     const listaCategorias = async () => {
         setLoading(true);
         try {
-            const response = await buscarCategoria();
-            console.log("Dados retornados:", response); // Verifique a estrutura dos dados
-            setCategoriasFiltradas(response.data || []); // Acesse a propriedade 'data' que contém o array
+            const response = await buscarCategoria(unidadeId);
+            setCategoriasFiltradas(response.data || []); 
         } catch (error) {
             console.error("Erro ao buscar categorias:", error);
-            setCategoriasFiltradas([]); // Garantir que seja um array vazio em caso de erro
+            setCategoriasFiltradas([]); 
         } finally {
             setLoading(false);
         }
@@ -69,7 +69,7 @@ const Categoria = () => {
             }
 
             setLoading(true);
-            // Chame com parâmetros separados
+          
             await criarCategoria(nomeCategoria, unidadeId);
             CustomToast({ type: "success", message: "Categoria cadastrada com sucesso!" });
             setCadastrarCategoria(false);
@@ -96,11 +96,11 @@ const Categoria = () => {
             await atualizarCategoria(
                 nomeCategoria,
                 unidadeId,
-                categoriaEditando.id // Passa o ID da categoria
+                categoriaEditando.id 
             );
             CustomToast({ type: "success", message: "Categoria editada com sucesso!" });
             setEditando(false);
-            listaCategorias(); // Atualiza a lista após edição
+            listaCategorias(); 
         } catch (error) {
             console.error("Erro ao editar categoria:", error);
             CustomToast({
@@ -121,7 +121,7 @@ const Categoria = () => {
                 await ativaCategoria(categoria.id);
                 CustomToast({ type: "success", message: "Categoria ativada com sucesso!" });
             }
-            listaCategorias(); // Atualiza a lista após a mudança de status
+            listaCategorias();
         } catch (error) {
             console.error("Erro ao alterar status da categoria:", error);
             CustomToast({
@@ -136,11 +136,11 @@ const Categoria = () => {
             setCategoriasFiltradas(todasCategorias);
             return;
         }
-
+    
         const filtradas = todasCategorias.filter(categoria =>
             categoria.nome.toLowerCase().includes(textoBusca.toLowerCase())
         );
-
+    
         setCategoriasFiltradas(filtradas);
     };
 
@@ -152,7 +152,7 @@ const Categoria = () => {
 
 
     useEffect(() => {
-        if (unidadeId) { // Só busca categorias se unidadeId estiver definido
+        if (unidadeId) {
             listaCategorias();
         }
     }, [unidadeId]);
@@ -161,6 +161,25 @@ const Categoria = () => {
         visible: { opacity: 1 },
     };
 
+    useEffect(() => {
+        if (unidadeId) {
+            const fetchCategorias = async () => {
+                setLoading(true);
+                try {
+                    const response = await buscarCategoria(unidadeId);
+                    setTodasCategorias(response.data || []);
+                    setCategoriasFiltradas(response.data || []);
+                } catch (error) {
+                    console.error("Erro ao buscar categorias:", error);
+                    setTodasCategorias([]);
+                    setCategoriasFiltradas([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchCategorias();
+        }
+    }, [unidadeId]);
     return (
         <div className="flex w-full ">
             <Navbar />
@@ -188,6 +207,8 @@ const Categoria = () => {
                                     fullWidth
                                     variant="outlined"
                                     size="small"
+                                    value={busca} 
+    onChange={handleBuscaChange}
                                     label="Buscar Categoria"
                                     autoComplete="off"
                                     sx={{ width: { xs: "72%", sm: "50%", md: "40%", lg: "40%" } }}
@@ -214,9 +235,9 @@ const Categoria = () => {
                                 ) : (
                                     <>
                                         {categoriasFiltradas.length === 0 ? (
-                                            <div className="mt-4 text-center text-gray-500">
-                                                {busca ? "Nenhuma categoria encontrada com esse nome." : "Nenhuma categoria cadastrada."}
-                                            </div>
+                                            <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
+                                            <TableLoading />
+                                            <label className="text-sm">Categoria não encontrada!</label></div>
                                         ) : (
                                             <TableComponent
                                                 headers={categorias}
@@ -224,7 +245,7 @@ const Categoria = () => {
                                                 actionsLabel={"Ações"}
                                                 actionCalls={{
                                                     edit: Editar,
-                                                    inactivate: handleToggleStatus
+                                                    //inactivate: handleToggleStatus
                                                 }}
                                             />
                                         )}

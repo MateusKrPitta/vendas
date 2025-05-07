@@ -16,7 +16,7 @@ export const criarUsuario = async (fullName, email, password, unidadesIds, tipo)
             fullName, 
             email, 
             password, 
-            unidadesIds, // Agora envia um array de IDs
+            unidadesIds, 
             tipo,
         }, {
             headers: {

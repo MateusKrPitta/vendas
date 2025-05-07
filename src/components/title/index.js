@@ -4,7 +4,7 @@ const Title = ({ conteudo, fontSize, color, fontWeight }) => {
   const estiloTitulo = {
     fontSize: fontSize,
     color: color,
-    fontWeight: fontWeight // Certifique-se de que esta propriedade esteja sendo aplicada corretamente no estilo
+    fontWeight: fontWeight
   };
 
   return <h1 style={estiloTitulo}>{conteudo}</h1>;

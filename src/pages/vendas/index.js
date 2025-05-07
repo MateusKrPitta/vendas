@@ -29,7 +29,6 @@ import { motion } from 'framer-motion';
 
 const Vendas = () => {
     const { unidadeId } = useUnidade();
-    console.log("Unidade ID atual:", unidadeId);
     const [produto, setProduto] = useState('');
     const [vendaEditando, setVendaEditando] = useState(null);
     const [erros, setErros] = useState({});
@@ -51,7 +50,7 @@ const Vendas = () => {
             quantidade > 0 &&
             valor > 0 &&
             formaPagamento !== '' &&
-            categoriaSelecionada !== '' && // Adicione esta verificação
+            categoriaSelecionada !== '' && 
             data !== ''
         );
     };
@@ -135,7 +134,7 @@ const Vendas = () => {
         try {
             await criarVendas(vendaData);
             limparCampos();
-            buscarVendasDoDia(data); // Recarrega as vendas após adicionar
+            buscarVendasDoDia(data);
         } catch (error) {
             console.error("Erro ao adicionar venda:", error);
         }
@@ -143,18 +142,18 @@ const Vendas = () => {
 
     const salvarEdicao = async () => {
         try {
-            // Corrigindo o formato da data
+         
             let dataISO;
             if (vendaEditando.data_venda) {
-                // Se já estiver no formato ISO, usa diretamente
+                
                 if (vendaEditando.data_venda.includes('T')) {
                     dataISO = vendaEditando.data_venda;
                 } else {
-                    // Se for apenas a data (YYYY-MM-DD), adiciona o horário
+                    
                     dataISO = new Date(vendaEditando.data_venda).toISOString();
                 }
             } else {
-                // Se não houver data, usa a data atual
+                
                 dataISO = new Date().toISOString();
             }
     
@@ -193,7 +192,7 @@ const Vendas = () => {
         }
     };
 
-    // Exemplo de ajuste no cálculo de totais
+
     const calcularTotais = () => {
         const totais = {
             pix: 0,
@@ -202,36 +201,35 @@ const Vendas = () => {
             credito: 0,
             geral: 0
         };
-
+    
         vendas.forEach(venda => {
             if (!venda) return;
-
+    
             const quantidade = parseFloat(venda.quantidade) || 0;
             const valor = parseFloat(venda.valor) || 0;
             const totalVenda = quantidade * valor;
-
+    
             totais.geral += totalVenda;
-
-            const formaPagamento = venda.formaPagamento; // Usando o campo da resposta da API
-
-            switch (formaPagamento) {
-                case 1:
+    
+           
+            switch (venda.forma_pagamento) {
+                case 1: 
                     totais.dinheiro += totalVenda;
                     break;
-                case 2:
+                case 2: 
                     totais.pix += totalVenda;
                     break;
-                case 3:
+                case 3: 
                     totais.credito += totalVenda;
                     break;
-                case 4:
+                case 4: 
                     totais.debito += totalVenda;
                     break;
                 default:
-                    console.warn('Forma de pagamento desconhecida:', formaPagamento);
+                    console.warn('Forma de pagamento desconhecida:', venda.forma_pagamento);
             }
         });
-
+    
         return totais;
     };
     const totais = calcularTotais();
@@ -271,8 +269,7 @@ const Vendas = () => {
     const carregarCategorias = async () => {
         setCarregandoCategorias(true);
         try {
-            const response = await buscarCategoria();
-            console.log("Dados das categorias:", response.data); // Adicione esta linha
+            const response = await buscarCategoria(unidadeId); 
             setCategorias(response.data || []);
         } catch (error) {
             console.error("Erro ao buscar categorias:", error);
@@ -281,6 +278,7 @@ const Vendas = () => {
             setCarregandoCategorias(false);
         }
     };
+    
 
     useEffect(() => {
         if (unidadeId) {
@@ -292,7 +290,7 @@ const Vendas = () => {
         if (unidadeId && categorias.length > 0) {
             const filtradas = categorias.filter(cat =>
                 cat.unidadeId === Number(unidadeId) ||
-                cat.unidade_id === Number(unidadeId) // Verifica ambos os nomes de campo possíveis
+                cat.unidade_id === Number(unidadeId) 
             );
             setCategoriasFiltradas(filtradas);
         } else {
@@ -336,7 +334,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '20%' }, }}
+                            sx={{ width: { xs: '57%', sm: '50%', md: '40%', lg: '20%' }, }}
                         />
 
                         <TextField
@@ -355,7 +353,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '10%' }, }}
+                            sx={{ width: { xs: '25%', sm: '50%', md: '40%', lg: '10%' }, }}
                         />
 
                         <NumericFormat
@@ -377,7 +375,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '15%' }, }}
+                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '15%' }, }}
                             decimalScale={2}
                             fixedDecimalScale={true}
                             thousandSeparator="."
@@ -439,10 +437,10 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '15%' }, }}
+                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '15%' }, }}
                         />
 
-                        <div className='w-full flex items-end justify-end'>
+                        <div className='w-full flex items-end justify-center md:justify-end '>
                             <ButtonComponent
                                 startIcon={<AddCircleOutline fontSize='small' />}
                                 title={'Adicionar'}
@@ -464,9 +462,9 @@ const Vendas = () => {
                                 }}
                             />
                         </div>
-                        <div className='flex w-full items-center justify-center gap-2'>
+                        <div className='flex w-full items-center justify-center gap-2 flex-wrap'>
                             {/* Card Pix */}
-                            <div className='w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Pix} alt="Pix" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Pix</label>
@@ -480,7 +478,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Dinheiro */}
-                            <div className='w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
@@ -494,7 +492,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Débito */}
-                            <div className='w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Debito} alt="Débito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Débito</label>
@@ -508,7 +506,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Crédito */}
-                            <div className='w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
@@ -522,7 +520,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Total */}
-                            <div className='w-[20%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[60%] md:w-[20%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
@@ -567,7 +565,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '50%' }, }}
+                            sx={{ width: { xs: '65%', sm: '50%', md: '40%', lg: '50%' }, }}
                         />
 
                         <TextField
@@ -586,7 +584,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '47%' }, }}
+                            sx={{ width: { xs: '30%', sm: '50%', md: '40%', lg: '47%' }, }}
                         />
 
                         <NumericFormat
@@ -607,7 +605,7 @@ const Vendas = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '44%' }, }}
+                            sx={{ width: { xs: '45%', sm: '50%', md: '40%', lg: '44%' }, }}
                             decimalScale={2}
                             fixedDecimalScale={true}
                             thousandSeparator="."

@@ -3,7 +3,6 @@ import { buscarUnidades } from "../service/get/unidade";
 
 const UnidadeContext = createContext();
 
-// UnidadeProvider.js
 export const UnidadeProvider = ({ children }) => {
     const [unidadeId, setUnidadeId] = useState(() => {
         const unidadeLocal = localStorage.getItem("unidadeId");
@@ -15,7 +14,6 @@ export const UnidadeProvider = ({ children }) => {
 
     const [unidadeStatus, setUnidadeStatus] = useState(null);
 
-    // Função para buscar o status da unidade atual
     const buscarStatusUnidade = async (id) => {
         try {
             const response = await buscarUnidades();
@@ -42,7 +40,6 @@ export const UnidadeProvider = ({ children }) => {
         localStorage.setItem("user", JSON.stringify(userData));
     };
 
-    // Carrega o status inicial
     useEffect(() => {
         const loadInitialStatus = async () => {
             if (unidadeId && !unidadeStatus) {

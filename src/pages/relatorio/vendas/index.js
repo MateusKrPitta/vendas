@@ -43,7 +43,7 @@ const RelatorioVendas = () => {
     return moment(dataString).format('DD/MM/YYYY');
   };
 
-  // Função para formatar valores monetários
+
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -53,39 +53,38 @@ const RelatorioVendas = () => {
 
   const carregarRelatorios = async () => {
     try {
-      setLoading(true);
-      const response = await buscarRelatorioVendas();
+        setLoading(true);
+        const response = await buscarRelatorioVendas(unidadeId); 
 
-      // Verifica se a resposta é válida e contém a propriedade data
-      if (!response || !response.data || !Array.isArray(response.data)) {
-        throw new Error("Dados de relatório inválidos");
-      }
+       
+        if (!response || !response.data || !Array.isArray(response.data)) {
+            throw new Error("Dados de relatório inválidos");
+        }
 
-      // Ordena por ano e mês
-      const dadosOrdenados = response.data.sort((a, b) => {
-        if (a.ano !== b.ano) return b.ano - a.ano;
-        return b.mes - a.mes;
-      });
+        const dadosOrdenados = response.data.sort((a, b) => {
+            if (a.ano !== b.ano) return b.ano - a.ano;
+            return b.mes - a.mes;
+        });
 
-      setRelatorios(dadosOrdenados);
-      setLoading(false);
+        setRelatorios(dadosOrdenados);
+        setLoading(false);
     } catch (err) {
-      setError(err.message);
-      setLoading(false);
-      CustomToast({
-        type: "error",
-        message: `Erro ao carregar relatórios: ${err.message}`
-      });
+        setError(err.message);
+        setLoading(false);
+        CustomToast({
+            type: "error",
+            message: `Erro ao carregar relatórios: ${err.message}`
+        });
     }
-  };
+};
 
   useEffect(() => {
-    if (unidadeId) { // Só carrega se tiver unidadeId
+    if (unidadeId) { 
       carregarRelatorios();
     }
   }, [unidadeId]);
 
-  // Agrupar relatórios por ano com totais calculados
+  
   const relatoriosPorAno = relatorios.reduce((acc, relatorio) => {
     const ano = relatorio.ano;
     if (!acc[ano]) {
@@ -101,7 +100,6 @@ const RelatorioVendas = () => {
     acc[ano].totalVendas += relatorio.totalVendas;
     acc[ano].totalQuantidade += relatorio.totalQuantidade;
 
-    // Calcula o valor total do mês
     const totalValorMes = relatorio.vendas?.reduce((total, venda) => {
       return total + (venda.quantidade * venda.valor);
     }, 0) || relatorio.totalValor || 0;
@@ -121,21 +119,21 @@ const RelatorioVendas = () => {
       key: 'quantidade', 
       label: 'Quantidade', 
       width: 120,
-      align: 'center' // Alinha ao centro
+      align: 'center'
     },
     {
       key: 'valor',
       label: 'Valor Unitário',
       width: 120,
-      align: 'right', // Alinha à direita
-      format: (value) => formatarMoeda(value) // Formatação direta
+      align: 'right', 
+      format: (value) => formatarMoeda(value) 
     },
     {
       key: 'valorTotal',
       label: 'Valor Total',
       width: 120,
-      align: 'right', // Alinha à direita
-      format: (value) => formatarMoeda(value) // Formatação direta
+      align: 'right', 
+      format: (value) => formatarMoeda(value) 
     },
     {
       key: 'data',
@@ -172,7 +170,7 @@ const RelatorioVendas = () => {
               <HeaderRelatorio />
             </div>
 
-            <div className="w-[100%] mt-2 ml-2 sm:mt-0 md:flex md:justify-start flex-col lg:w-[80%]">
+            <div className="w-[100%] mt-2 ml-2 sm:mt-0  md:flex  md:justify-start flex-col lg:w-[80%]">
               <FormControl fullWidth sx={{ mb: 3, maxWidth: 300 }}>
                 <InputLabel id="ano-select-label" sx={{ display: 'flex', alignItems: 'center' }}>
                   Selecione o ano
@@ -239,8 +237,7 @@ const RelatorioVendas = () => {
                     </div>
 
                     {dadosAno.meses.map((relatorio) => {
-                      // Verifique a estrutura dos dados aqui
-                      console.log('Relatório:', relatorio);
+                  
 
                       return (
                         <Acordion
@@ -273,8 +270,8 @@ const RelatorioVendas = () => {
                                       ...venda,
                                       produto: venda.produto || venda.nome,
                                       quantidade: quantidade,
-                                      valor: formatarMoeda(valor), // Já formata aqui
-                                      valorTotal: formatarMoeda(valorTotal), // Já formata aqui
+                                      valor: formatarMoeda(valor),
+                                      valorTotal: formatarMoeda(valorTotal), 
                                       data: formatarData(venda.data || venda.data_venda),
                                       categoria: venda.categoria?.nome || venda.categoria || 'Sem categoria'
                                     };

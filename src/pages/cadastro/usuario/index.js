@@ -130,9 +130,10 @@ const Usuario = () => {
         editUser.id,
         nomeCompleto,
         email,
-        unidadeSelecionada,
+        null,
         permissao,
-        senha || undefined
+        senha || undefined,
+        unidadesSelecionadas 
       );
       CustomToast('Usuário editado com sucesso!', 'success');
       setEditando(false);
@@ -142,10 +143,9 @@ const Usuario = () => {
       CustomToast(error.response?.data?.message || 'Erro ao editar usuário!', 'error');
     }
   };
-
   const handleCloseEdicao = () => {
     setEditando(false);
-    limparCampos(); // Adicione esta linha para limpar os campos ao fechar
+    limparCampos(); 
   };
 
   const handleEditClick = (user) => {
@@ -153,12 +153,13 @@ const Usuario = () => {
     setNomeCompleto(user.nome);
     setEmail(user.email);
     setSenha('');
-
-    const unidadesDoUsuario = user.unidade.split(', ').map(nome => {
-      return unidades.find(u => u.label === nome)?.value;
-    }).filter(Boolean);
-
-    setUnidadesSelecionadas(unidadesDoUsuario);
+  
+    const unidadesArray = user.unidade.split(', ');
+    const unidadesIds = unidadesArray
+      .map(nome => unidades.find(u => u.label === nome)?.value)
+      .filter(Boolean);
+    
+    setUnidadesSelecionadas(unidadesIds);
     setPermissao(user.tipo);
     setEditando(true);
   };
@@ -480,18 +481,18 @@ const Usuario = () => {
                           ),
                         }}
                       />
-                      <SelectTextFields
-                        width={'260px'}
-                        icon={<LocationOnOutlined fontSize="small" />}
-                        label={'Unidades'}
-                        backgroundColor={"#D9D9D9"}
-                        name={"unidades"}
-                        fontWeight={500}
-                        value={unidadesSelecionadas}
-                        onChange={(e) => setUnidadesSelecionadas(e.target.value)}
-                        options={unidades}
-                        multiple
-                      />
+                     <SelectTextFields
+  width={'260px'}
+  icon={<LocationOnOutlined fontSize="small" />}
+  label={'Unidades'}
+  backgroundColor={"#D9D9D9"}
+  name={"unidades"}
+  fontWeight={500}
+  value={unidadesSelecionadas}
+  onChange={(e) => setUnidadesSelecionadas(e.target.value)}
+  options={unidades}
+  multiple
+/>
                     </div>
                     <div className="w-full flex items-center mt-4 ml-2 font-bold mb-1">
                       <label className="w-[70%] text-xs">Permissão</label>

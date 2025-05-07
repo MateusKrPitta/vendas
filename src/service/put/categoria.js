@@ -8,7 +8,7 @@ export const atualizarCategoria = async (nome, unidade_id, id) => {
 
     try {
         const response = await https.put(
-            `/categorias/${id}`, // Certifique-se que a rota está correta
+            `/categorias/${id}`, 
             { nome, unidade_id },
             {
                 headers: {

@@ -73,12 +73,12 @@ const HeaderPerfil = () => {
         setUnidades(unidadesFormatadas);
 
         if (unidadesFormatadas.length > 0 && !unidadeId) {
-          // Atualiza tanto o ID quanto o status
+
           atualizarUnidade(unidadesFormatadas[0].value, unidadesFormatadas[0].ativo);
         }
       }
     } catch (error) {
-      // ... tratamento de erro ...
+      
     } finally {
       setLoading(false);
     }

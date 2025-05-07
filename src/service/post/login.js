@@ -13,7 +13,7 @@ export const login = async (email, password) => {
     return {
         status: true,
         data: {
-          token: apiData.token, // Token direto, não precisa de .token
+          token: apiData.token, 
           user: {
             ...apiData.user,
             unidades: apiData.user.unidades || []

@@ -54,7 +54,6 @@ const LoginPage = () => {
                     message: 'Seja bem vindo!'
                 });
 
-                // Redireciona para o dashboard
                 navigate('/dashboard', { replace: true });
 
             } else {

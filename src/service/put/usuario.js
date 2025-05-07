@@ -1,19 +1,26 @@
 import CustomToast from "../../components/toast";
 import httpsInstance from "../url";
 
-export const atualizarUsuario = async (id, fullName, email, unidadeId, tipo, password = null) => {
+export const atualizarUsuario = async (
+  id, 
+  fullName, 
+  email, 
+  unidadeId, 
+  tipo, 
+  password = null,
+  unidadesIds = []
+) => {
   const https = httpsInstance();
   const userData = localStorage.getItem('user');
   const token = userData ? JSON.parse(userData).token : null;
-
 
   const requestData = { 
     fullName, 
     email, 
     unidadeId, 
-    tipo 
+    tipo,
+    unidadesIds 
   };
-
 
   if (password) {
     requestData.password = password;
