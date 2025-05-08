@@ -1,42 +1,32 @@
-import React from "react";
-import MaskedInput from "react-text-mask";
-import { TextField, InputAdornment } from "@mui/material";
-import { Icon } from '@mui/material';
+import InputMask from 'react-input-mask';
+import { Phone } from '@mui/icons-material';
+import { TextField, InputAdornment, Box } from '@mui/material';
 
-const MaskedFieldPhone = ({ type, label, value, onChange, icon, iconSize = 24, labelSize = 'medium', width = width }) => {
-  const mask = type === "telefone"
-    ? ['(', /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/] 
-    : [/\d/, /\d/, ".", /\d/, /\d/, /\d/, ".", /\d/, /\d/, /\d/, "/", /\d/, /\d/, /\d/, /\d/, "-", /\d/, /\d/]; 
-
+export function TelefoneInput({ value, onChange }) {
   return (
-    <MaskedInput
-      mask={mask}
-      value={value}
-      onChange={onChange}
-      render={(ref, props) => (
-        <TextField
-          {...props}
-          inputRef={ref}
-          variant="outlined"
-          size="small"
-          fullWidth
-          label={label}
-          InputLabelProps={{
-            shrink: true,
-            style: { fontSize: labelSize === 'small' ? '0.75rem' : '1rem' }
-          }}
-          InputProps={{
-            startAdornment: icon ? (
-              <InputAdornment position="start">
-                <Icon style={{ fontSize: iconSize }}>{icon}</Icon>
-              </InputAdornment>
-            ) : null,
-          }}
-          sx={{ width }}
-        />
-      )}
-    />
+    <Box width="95%">
+      <InputMask
+        mask="(99) 99999-9999"
+        value={value}
+        onChange={onChange}
+      >
+        {(inputProps) => (
+          <TextField
+            {...inputProps}
+            fullWidth
+            label="Telefone"
+            size="small"
+            variant="outlined"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Phone />
+                </InputAdornment>
+              ),
+            }}
+          />
+        )}
+      </InputMask>
+    </Box>
   );
-};
-
-export default MaskedFieldPhone;
+}

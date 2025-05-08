@@ -19,7 +19,7 @@ import { motion } from 'framer-motion';
 import { buscarFornecedor } from "../../../service/get/fornecedor";
 import { cadastrosFornecedores } from "../../../entities/class/cadastro/fornecedor";
 import { atualizarFornecedor } from "../../../service/put/forncedor";
-import MaskedFieldPhone from "../../../utils/mascaras/telefone";
+import { TelefoneInput } from "../../../utils/mascaras/telefone";
 
 import { reativaFornecedor } from "../../../service/reativa/fornecedor";
 import TableLoading from "../../../components/loading/loading-table/loading";
@@ -201,16 +201,11 @@ const ListaFornecedor = () => {
                         ),
                       }}
                     />
-                    <MaskedFieldPhone
-                      type="telefone"
-                      label="Telefone"
-                      width={'95%'}
-                      value={telefoneFornecedor}
-                      onChange={(e) => setTelefoneFornecedor(e.target.value)}
-                      icon={<Phone />}
-                      iconSize={30}
-                      labelSize="small"
-                    />
+                    <TelefoneInput
+                                          value={telefoneFornecedor}
+                                          onChange={(e) => setTelefoneFornecedor(e.target.value)}
+                                        />
+                  
 
                     <div className="flex w-[96%] items-end justify-end ">
                       <ButtonComponent
@@ -251,16 +246,10 @@ const ListaFornecedor = () => {
                           ),
                         }}
                       />
-                      <MaskedFieldPhone
-                        type="telefone"
-                        label="Telefone"
-                        width={'100%'}
-                        value={telefoneFornecedor}
-                        onChange={(e) => setTelefoneFornecedor(e.target.value)}
-                        icon={<Phone />}
-                        iconSize={30}
-                        labelSize="small"
-                      />
+                      <TelefoneInput
+                                            value={telefoneFornecedor}
+                                            onChange={(e) => setTelefoneFornecedor(e.target.value)}
+                                          />
 
                       <div className="flex w-[100%] items-end justify-end ">
                         <ButtonComponent
