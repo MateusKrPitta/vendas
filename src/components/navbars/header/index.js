@@ -12,6 +12,7 @@ import { Button, Drawer, IconButton, List } from '@mui/material';
 import AddchartIcon from '@mui/icons-material/Addchart';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
 
 const Navbar = ({ user }) => {
     const [activeRoute, setActiveRoute] = useState("");
@@ -19,7 +20,7 @@ const Navbar = ({ user }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [showCadastroSubMenu, setShowCadastroSubMenu] = useState(false);
 
-   
+
     const tipoUsuario = localStorage.getItem('tipo');
 
 
@@ -79,6 +80,7 @@ const Navbar = ({ user }) => {
                         </button>
 
 
+
                         <button
                             onClick={() => handleNavigate("/saidas")}
                             className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/saidas" ? "border-b-2 border-secundary" : ""}`}
@@ -87,18 +89,25 @@ const Navbar = ({ user }) => {
                             <AddToQueueIcon fontSize={"small"} />
                             <span>Saídas</span>
                         </button>
-                       
-                        {!isUsuarioTipo3 && (
-                        <button
-                            onClick={() => handleNavigate("/relatorio")}
-                            className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/relatorios" ? "border-b-2 border-secundary" : ""}`}
-                            title={'Relatório'}
-                        >
-                            <DataThresholdingIcon fontSize={"small"} />
-                            <span>Relatório</span>
-                        </button>
-                        )}
 
+                        {!isUsuarioTipo3 && (
+                            <button
+                                onClick={() => handleNavigate("/relatorio")}
+                                className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/relatorios" ? "border-b-2 border-secundary" : ""}`}
+                                title={'Relatório'}
+                            >
+                                <DataThresholdingIcon fontSize={"small"} />
+                                <span>Relatório</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={() => handleNavigate("/cursos")}
+                            className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/saidas" ? "border-b-2 border-secundary" : ""}`}
+                            title={'Saídas'}
+                        >
+                            <VideoCameraFrontIcon fontSize={"small"} />
+                            <span>Cursos</span>
+                        </button>
                         <label className="text-sm mt-1 text-primary font-bold">Configurações</label>
                         <button
                             onClick={() => handleNavigate("/cadastro")}

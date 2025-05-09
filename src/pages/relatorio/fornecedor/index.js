@@ -151,7 +151,7 @@ const ListaFornecedor = () => {
               <HeaderRelatorio />
             </div>
             <div className="w-[100%] itens-center mt-2 ml-2 sm:mt-0 md:flex md:justify-start flex-col lg:w-[80%]">
-              
+
 
               <div className='w-full'>
                 {loading ? (
@@ -161,7 +161,17 @@ const ListaFornecedor = () => {
                     headers={fornecedores}
                     rows={fornecedoresFiltrados}
                     actionsLabel={"Ações"}
-                   
+                    actionCalls={{
+                      // ... outras ações existentes ...
+                      whatsapp: (row) => {
+                        // Remove caracteres não numéricos
+                        const phoneNumber = row.telefone.replace(/\D/g, '');
+                        // Abre o WhatsApp com o número do fornecedor
+                        window.open(`https://wa.me/55${phoneNumber}`, '_blank');
+                      },
+                      // ... outras ações ...
+                    }}
+
                   />
                 ) : (
                   <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
@@ -202,10 +212,10 @@ const ListaFornecedor = () => {
                       }}
                     />
                     <TelefoneInput
-                                          value={telefoneFornecedor}
-                                          onChange={(e) => setTelefoneFornecedor(e.target.value)}
-                                        />
-                  
+                      value={telefoneFornecedor}
+                      onChange={(e) => setTelefoneFornecedor(e.target.value)}
+                    />
+
 
                     <div className="flex w-[96%] items-end justify-end ">
                       <ButtonComponent
@@ -247,9 +257,9 @@ const ListaFornecedor = () => {
                         }}
                       />
                       <TelefoneInput
-                                            value={telefoneFornecedor}
-                                            onChange={(e) => setTelefoneFornecedor(e.target.value)}
-                                          />
+                        value={telefoneFornecedor}
+                        onChange={(e) => setTelefoneFornecedor(e.target.value)}
+                      />
 
                       <div className="flex w-[100%] items-end justify-end ">
                         <ButtonComponent

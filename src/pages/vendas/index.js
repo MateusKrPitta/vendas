@@ -5,7 +5,7 @@ import MenuMobile from '../../components/menu-mobile';
 import HeaderPerfil from '../../components/navbars/perfil';
 import { AddCircleOutline, Category, DataArray, Edit, Money, Numbers, ProductionQuantityLimits, Save } from '@mui/icons-material';
 import ButtonComponent from '../../components/button';
-import { Checkbox, FormControlLabel, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Checkbox, FormControlLabel, InputAdornment, TextField } from '@mui/material';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import SelectTextFields from '../../components/select';
 import TableComponent from '../../components/table';
@@ -50,7 +50,7 @@ const Vendas = () => {
             quantidade > 0 &&
             valor > 0 &&
             formaPagamento !== '' &&
-            categoriaSelecionada !== '' && 
+            categoriaSelecionada !== '' &&
             data !== ''
         );
     };
@@ -85,27 +85,32 @@ const Vendas = () => {
         return Object.keys(novosErros).length === 0;
     };
 
-    const handleEdit = (row) => {
+const handleEdit = (row) => {
+    let venda = vendas.find(v => v.id === row.id);
 
-        let venda = vendas.find(v => v.id === row.id);
+    if (!venda) {
+        venda = vendas.find(v =>
+            (v.produto === row.produto || v.nome === row.produto) &&
+            v.quantidade === row.quantidade
+        );
+    }
 
-        if (!venda) {
-            venda = vendas.find(v =>
-                (v.produto === row.produto || v.nome === row.produto) &&
-                v.quantidade === row.quantidade
-            );
-        }
+    if (venda) {
+        // Encontra o objeto completo da categoria
+        const categoriaCompleta = categoriasFiltradas.find(
+            cat => cat.id.toString() === venda.categoria_id?.toString()
+        );
 
-        if (venda) {
-            setVendaEditando({
-                ...venda,
-                id: venda.id || venda._id
-            });
-            setEditando(true);
-        } else {
-            CustomToast({ type: "error", message: "Venda não encontrada para edição" });
-        }
-    };
+        setVendaEditando({
+            ...venda,
+            id: venda.id || venda._id,
+            categoriaObject: categoriaCompleta || null // Adiciona o objeto completo da categoria
+        });
+        setEditando(true);
+    } else {
+        CustomToast({ type: "error", message: "Venda não encontrada para edição" });
+    }
+};
     const limparCampos = () => {
         setProduto('');
         setQuantidade(0);
@@ -142,21 +147,21 @@ const Vendas = () => {
 
     const salvarEdicao = async () => {
         try {
-         
+
             let dataISO;
             if (vendaEditando.data_venda) {
-                
+
                 if (vendaEditando.data_venda.includes('T')) {
                     dataISO = vendaEditando.data_venda;
                 } else {
-                    
+
                     dataISO = new Date(vendaEditando.data_venda).toISOString();
                 }
             } else {
-                
+
                 dataISO = new Date().toISOString();
             }
-    
+
             await atualizarVendas(
                 vendaEditando.id,
                 vendaEditando.nome,
@@ -167,7 +172,7 @@ const Vendas = () => {
                 Number(vendaEditando.categoria_id),
                 dataISO
             );
-    
+
             CustomToast({ type: "success", message: "Venda atualizada com sucesso!" });
             setEditando(false);
             setVendaEditando(null);
@@ -201,35 +206,35 @@ const Vendas = () => {
             credito: 0,
             geral: 0
         };
-    
+
         vendas.forEach(venda => {
             if (!venda) return;
-    
+
             const quantidade = parseFloat(venda.quantidade) || 0;
             const valor = parseFloat(venda.valor) || 0;
             const totalVenda = quantidade * valor;
-    
+
             totais.geral += totalVenda;
-    
-           
+
+
             switch (venda.forma_pagamento) {
-                case 1: 
+                case 1:
                     totais.dinheiro += totalVenda;
                     break;
-                case 2: 
+                case 2:
                     totais.pix += totalVenda;
                     break;
-                case 3: 
+                case 3:
                     totais.credito += totalVenda;
                     break;
-                case 4: 
+                case 4:
                     totais.debito += totalVenda;
                     break;
                 default:
                     console.warn('Forma de pagamento desconhecida:', venda.forma_pagamento);
             }
         });
-    
+
         return totais;
     };
     const totais = calcularTotais();
@@ -269,7 +274,7 @@ const Vendas = () => {
     const carregarCategorias = async () => {
         setCarregandoCategorias(true);
         try {
-            const response = await buscarCategoria(unidadeId); 
+            const response = await buscarCategoria(unidadeId);
             setCategorias(response.data || []);
         } catch (error) {
             console.error("Erro ao buscar categorias:", error);
@@ -278,7 +283,7 @@ const Vendas = () => {
             setCarregandoCategorias(false);
         }
     };
-    
+
 
     useEffect(() => {
         if (unidadeId) {
@@ -290,7 +295,7 @@ const Vendas = () => {
         if (unidadeId && categorias.length > 0) {
             const filtradas = categorias.filter(cat =>
                 cat.unidadeId === Number(unidadeId) ||
-                cat.unidade_id === Number(unidadeId) 
+                cat.unidade_id === Number(unidadeId)
             );
             setCategoriasFiltradas(filtradas);
         } else {
@@ -400,25 +405,40 @@ const Vendas = () => {
                             ]}
                         />
 
-                        <SelectTextFields
-                            width={'175px'}
-                            icon={<Category fontSize="small" />}
-                            label={'Categoria'}
-                            backgroundColor={"#D9D9D9"}
-                            name={"Categoria"}
-                            fontWeight={500}
-                            options={categoriasFiltradas.map(categoria => ({
-                                value: categoria.id.toString(),
-                                label: categoria.nome
-                            }))}
-                            value={categoriaSelecionada}
-                            onChange={(e) => setCategoriaSelecionada(e.target.value)}
-                            disabled={carregandoCategorias}
-                            noOptionsMessage={() =>
+                        <Autocomplete
+                            options={categoriasFiltradas}
+                            getOptionLabel={(option) => option.nome}
+                            value={categoriasFiltradas.find(cat => cat.id.toString() === categoriaSelecionada) || null}
+                            onChange={(event, newValue) => {
+                                setCategoriaSelecionada(newValue ? newValue.id.toString() : '');
+                            }}
+                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '18%' }, }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Categoria"
+                                    variant="outlined"
+                                    size="small"
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: (
+                                            <>
+                                                <InputAdornment position="start">
+                                                    <Category fontSize="small" />
+                                                </InputAdornment>
+                                                {params.InputProps.startAdornment}
+                                            </>
+                                        ),
+                                    }}
+
+                                />
+                            )}
+                            noOptionsText={
                                 unidadeId
-                                    ? "Nenhuma categoria disponível para esta unidade"
+                                    ? "Nenhuma categoria encontrada"
                                     : "Selecione uma unidade primeiro"
                             }
+                            disabled={carregandoCategorias}
                         />
 
                         <TextField
@@ -464,7 +484,7 @@ const Vendas = () => {
                         </div>
                         <div className='flex w-full items-center justify-center gap-2 flex-wrap'>
                             {/* Card Pix */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Pix} alt="Pix" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Pix</label>
@@ -478,7 +498,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Dinheiro */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
@@ -492,7 +512,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Débito */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Debito} alt="Débito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Débito</label>
@@ -506,7 +526,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Crédito */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
@@ -520,7 +540,7 @@ const Vendas = () => {
                             </div>
 
                             {/* Card Total */}
-                            <div className='w-[60%] md:w-[20%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[60%] md:w-[19%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
@@ -633,34 +653,68 @@ const Vendas = () => {
                                 { value: '4', label: 'Cartão de Débito' }
                             ]}
                         />
-
-<TextField
-    fullWidth
-    type='date'
-    variant="outlined"
-    size="small"
-    label="Data"
-    value={vendaEditando?.data_venda ? 
-        new Date(vendaEditando.data_venda).toISOString().split('T')[0] : 
-        data
-    }
-    onChange={(e) => {
-        const dateValue = e.target.value;
-        setVendaEditando({ 
-            ...vendaEditando, 
-            data_venda: dateValue ? new Date(dateValue).toISOString() : new Date().toISOString()
+                       <Autocomplete
+    sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '50%' } }}
+    options={categoriasFiltradas}
+    getOptionLabel={(option) => option.nome}
+    value={vendaEditando?.categoriaObject || null} // Usa o objeto completo da categoria
+    onChange={(event, newValue) => {
+        setVendaEditando({
+            ...vendaEditando,
+            categoria_id: newValue ? Number(newValue.id) : null,
+            categoriaObject: newValue // Mantém o objeto completo atualizado
         });
     }}
-    InputProps={{
-        startAdornment: (
-            <InputAdornment position="start">
-                <DateRangeIcon fontSize='small' />
-            </InputAdornment>
-        ),
-    }}
-    autoComplete="off"
-    sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '44%' }, }}
+    renderInput={(params) => (
+        <TextField
+            {...params}
+            label="Categoria"
+            variant="outlined"
+            size="small"
+            InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                    <>
+                        <InputAdornment position="start">
+                            <Category fontSize="small" />
+                        </InputAdornment>
+                        {params.InputProps.startAdornment}
+                    </>
+                ),
+            }}
+        />
+    )}
+    noOptionsText="Nenhuma categoria encontrada"
+    disabled={carregandoCategorias}
+    isOptionEqualToValue={(option, value) => option.id === value.id} // Adicione esta linha
 />
+                        <TextField
+                            fullWidth
+                            type='date'
+                            variant="outlined"
+                            size="small"
+                            label="Data"
+                            value={vendaEditando?.data_venda ?
+                                new Date(vendaEditando.data_venda).toISOString().split('T')[0] :
+                                data
+                            }
+                            onChange={(e) => {
+                                const dateValue = e.target.value;
+                                setVendaEditando({
+                                    ...vendaEditando,
+                                    data_venda: dateValue ? new Date(dateValue).toISOString() : new Date().toISOString()
+                                });
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <DateRangeIcon fontSize='small' />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            autoComplete="off"
+                            sx={{ width: { xs: '47%', sm: '50%', md: '40%', lg: '46%' }, }}
+                        />
 
                         <ButtonComponent
                             title={'Salvar'}

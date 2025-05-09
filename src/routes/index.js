@@ -16,6 +16,7 @@ import RelatorioCategoria from '../pages/relatorio/categoria/index.js';
 import RelatorioSaidas from '../pages/relatorio/saidas/index.js';
 import ListaCompra from '../pages/relatorio/lista-compra/index.js';
 import ListaFornecedor from '../pages/relatorio/fornecedor/index.js';
+import Cursos from '../pages/cursos/index.js';
 
 const AppRoutes = () => {
     return (
@@ -28,13 +29,13 @@ const AppRoutes = () => {
                 <Route path="/vendas" element={<Vendas />} />
                 <Route path="/saidas" element={<Saidas />} />
                 <Route path="/cadastro" element={<Cadastro />} />
-                
+                <Route path="/cursos" element={<Cursos />} />
                 <Route path="/cadastro/categoria" element={<Categoria />} />
             </Route>
 
             {/* Rotas restritas - apenas tipo 1 (admin) */}
             <Route element={<PrivateRoute allowedAccessTypes={[1]} />}>
-            <Route path="/cadastro/fornecedor" element={<Fornecedor />} />
+                <Route path="/cadastro/fornecedor" element={<Fornecedor />} />
                 <Route path="/cadastro/usuario" element={<Usuario />} />
                 <Route path="/cadastro/unidade" element={<Unidades />} />
             </Route>

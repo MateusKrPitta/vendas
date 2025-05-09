@@ -104,7 +104,7 @@ const MenuMobile = () => {
                     aria-haspopup="true"
                     aria-expanded={open ? 'true' : undefined}
                     onClick={handleClick}
-                    style={{ backgroundColor: '#0d2d43', color: 'white', borderRadius: '5px', width: '100%' }}
+                    style={{ backgroundColor: '#0d2d43', padding:10, color: 'white', borderRadius: '5px', width: '100%' }}
                 >
                     <MenuIcon fontSize='small' />
                 </button>
@@ -119,28 +119,28 @@ const MenuMobile = () => {
                     'aria-labelledby': 'basic-button',
                 }}
             >
-                <MenuItem onClick={() => handleNavigate("/dashboard")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                    <DashboardIcon style={{ color: '#0d2d43' }} fontSize='small' />Dashboard
+                <MenuItem onClick={() => handleNavigate("/dashboard")} style={{ color: 'black', gap: '10px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                    <DashboardIcon style={{ color: '#0d2d43' }} />Dashboard
                 </MenuItem>
                 {tipoUsuario !== "3" && (
-                    <MenuItem onClick={() => handleNavigate("/vendas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                        <AddchartIcon style={{ color: '#0d2d43' }} fontSize='small' />Vendas
+                    <MenuItem onClick={() => handleNavigate("/vendas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                        <AddchartIcon style={{ color: '#0d2d43' }}  />Vendas
                     </MenuItem>
                 )}
                 {tipoUsuario !== "3" && (
-                    <MenuItem onClick={() => handleNavigate("/saidas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                        <AddToQueueIcon style={{ color: '#0d2d43' }} fontSize='small' />Saídas
+                    <MenuItem onClick={() => handleNavigate("/saidas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                        <AddToQueueIcon style={{ color: '#0d2d43' }}  />Saídas
                     </MenuItem>
                 )}
-                <MenuItem onClick={() => handleNavigate("/relatorio")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                    <DataThresholdingIcon style={{ color: '#0d2d43' }} fontSize='small' />Relatório
+                <MenuItem onClick={() => handleNavigate("/relatorio")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                    <DataThresholdingIcon style={{ color: '#0d2d43' }} />Relatório
                 </MenuItem>
 
-                <MenuItem onClick={() => handleNavigate("/cadastro")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                    <MiscellaneousServicesIcon style={{ color: '#0d2d43' }} fontSize='small' />Cadastro
+                <MenuItem onClick={() => handleNavigate("/cadastro")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                    <MiscellaneousServicesIcon style={{ color: '#0d2d43' }}  />Cadastro
                 </MenuItem>
-                <MenuItem onClick={() => handleNavigate("/")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '12px' }}>
-                    <ExitToApp style={{ color: '#0d2d43' }} fontSize='small' />Sair
+                <MenuItem onClick={() => handleNavigate("/")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                    <ExitToApp style={{ color: '#0d2d43' }}  />Sair
                 </MenuItem>
             </Menu>
         </div>

@@ -303,7 +303,7 @@ const Categoria = () => {
                                 open={editando}
                                 handleClose={() => setEditando(false)}
                                 icon={<Edit fontSize={"small"} />}
-                                tituloModal={"Editar Fornecedor"}
+                                tituloModal={"Editar Categoria"}
                                 tamanhoTitulo={"73%"}
                                 conteudo={
                                     <>

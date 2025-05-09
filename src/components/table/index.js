@@ -10,6 +10,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import { Print } from '@mui/icons-material';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowChange, rowStyle, selectedCheckboxes, setSelectedCheckboxes }) => {
     const [pageList, setPageList] = useState([]);
@@ -138,8 +139,8 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                 </IconButton>
             ),
             inactivate: (
-                <IconButton 
-                    onClick={() => actionCalls.inactivate(row)} 
+                <IconButton
+                    onClick={() => actionCalls.inactivate(row)}
                     title={row.ativo === "Ativo" || row.ativo === true ? "Inativar Registro" : "Reativar Registro"}
                     className='inactivate-button'
                     sx={{
@@ -150,7 +151,7 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                             backgroundColor: row.ativo === "Ativo" || row.ativo === true ? '#ff9800' : '#4caf50',
                             border: `1px solid ${row.ativo === "Ativo" || row.ativo === true ? '#e68a00' : '#388e3c'}`
                         }
-                    }} 
+                    }}
                 >
                     {row.ativo === "Ativo" || row.ativo === true ? (
                         <BlockOutlinedIcon fontSize="small" />
@@ -159,8 +160,8 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                     )}
                 </IconButton>
             ),
-            
-            
+
+
             print: (
                 <IconButton onClick={() => actionCalls.print(row)} title="Imprimir"
                     className='inactivate-button'
@@ -191,6 +192,24 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                     <AddCircleOutlineIcon fontSize={"small"} />
                 </IconButton>
             ),
+            whatsapp: (
+                <IconButton
+                    onClick={() => actionCalls.whatsapp(row)}
+                    title="Enviar mensagem no WhatsApp"
+                    className='whatsapp-button'
+                    sx={{
+                        color: '#25D366',
+                        border: '1px solid #25D366',
+                        '&:hover': {
+                            color: '#fff',
+                            backgroundColor: '#25D366',
+                            border: '1px solid #128C7E'
+                        }
+                    }}
+                >
+                    <WhatsAppIcon fontSize={"small"} />
+                </IconButton>
+            )
         };
 
         return actionTypes.map((action) => {
@@ -230,7 +249,7 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                                 sort !== false && (
                                     key === "actions" && hasActions ? (
                                         <TableCell key={key} style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
-                                            {renderActions(row, rowIndex)} 
+                                            {renderActions(row, rowIndex)}
                                         </TableCell>
                                     ) : type === 'checkbox' ? (
                                         <TableCell key={key}>
@@ -240,11 +259,11 @@ const TableComponent = ({ rows, headers, actionCalls = {}, actionsLabel, onRowCh
                                                 onChange={(e) => {
                                                     const updatedSelectedCheckboxes = { ...selectedCheckboxes };
                                                     if (e.target.checked) {
-                                                        updatedSelectedCheckboxes[row.produto] = true; 
+                                                        updatedSelectedCheckboxes[row.produto] = true;
                                                     } else {
-                                                        delete updatedSelectedCheckboxes[row.produto]; 
+                                                        delete updatedSelectedCheckboxes[row.produto];
                                                     }
-                                                    setSelectedCheckboxes(updatedSelectedCheckboxes); 
+                                                    setSelectedCheckboxes(updatedSelectedCheckboxes);
                                                 }}
                                             />
                                         </TableCell>

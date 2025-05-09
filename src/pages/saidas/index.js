@@ -315,7 +315,7 @@ const Saidas = () => {
                         {/* Cards de totais */}
                         <div className='flex w-full items-center justify-center gap-2 flex-wrap' >
                             {/* Card Dinheiro */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
@@ -329,7 +329,7 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Pix */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Pix} alt="Pix" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Pix</label>
@@ -343,7 +343,7 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Débito */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Debito} alt="Débito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Débito</label>
@@ -357,7 +357,7 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Crédito */}
-                            <div className='w-[45%] md:w-[20%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
@@ -371,7 +371,7 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Total */}
-                            <div className='w-[60%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[60%] md:w-[19%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
                                 <div className='flex flex-col gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
