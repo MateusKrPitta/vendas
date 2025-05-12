@@ -17,6 +17,9 @@ import RelatorioSaidas from '../pages/relatorio/saidas/index.js';
 import ListaCompra from '../pages/relatorio/lista-compra/index.js';
 import ListaFornecedor from '../pages/relatorio/fornecedor/index.js';
 import Cursos from '../pages/cursos/index.js';
+import Facebook from '../pages/cursos/facebook/index.js';
+import MercadoLivre from '../pages/cursos/mercado-livre/index.js';
+import WhatsAppCurso from '../pages/cursos/whats-app/index.js';
 
 const AppRoutes = () => {
     return (
@@ -27,9 +30,12 @@ const AppRoutes = () => {
             <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/vendas" element={<Vendas />} />
-                <Route path="/saidas" element={<Saidas />} />
+               
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/cursos" element={<Cursos />} />
+                 <Route path="/cursos/facebook" element={<Facebook />} />
+                  <Route path="/cursos/mercado-livre" element={<MercadoLivre />} />
+                   <Route path="/cursos/whatsapp" element={<WhatsAppCurso />} />
                 <Route path="/cadastro/categoria" element={<Categoria />} />
             </Route>
 
@@ -42,6 +48,7 @@ const AppRoutes = () => {
 
             {/* Rotas restritas - apenas tipos 1 e 2 (admin e gerente) */}
             <Route element={<PrivateRoute allowedAccessTypes={[1, 2]} />}>
+             <Route path="/saidas" element={<Saidas />} />
                 <Route path="/relatorio" element={<Relatorio />} />
                 <Route path="/relatorio/vendas" element={<RelatorioVendas />} />
                 <Route path="/relatorio/lista-compra" element={<ListaCompra />} />

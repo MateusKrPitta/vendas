@@ -20,7 +20,10 @@ export const criarFornecedor = async (nome, telefone, observacao) => {
                 "Content-Type": "application/json",
             },
         });
-
+        CustomToast({ 
+            type: "success", 
+            message: response.data.message 
+        });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || error.response?.data?.success || "Erro ao cadastrar unidade";

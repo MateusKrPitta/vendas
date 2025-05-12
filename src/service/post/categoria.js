@@ -22,6 +22,11 @@ export const criarCategoria = async (nome, unidade_id) => {
             }
         );
 
+        CustomToast({ 
+            type: "success", 
+            message: response.data.message 
+        });
+
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || "Erro ao cadastrar categoria";

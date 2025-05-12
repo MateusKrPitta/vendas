@@ -4,11 +4,9 @@ import MenuMobile from '../../../components/menu-mobile';
 import HeaderPerfil from '../../../components/navbars/perfil';
 import SubjectIcon from '@mui/icons-material/Subject';
 import { InputAdornment, TextField } from '@mui/material';
-import HeaderCadastro from '../../../components/navbars/cadastro';
 import ButtonComponent from '../../../components/button';
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import TableComponent from '../../../components/table';
-import { useReactToPrint } from 'react-to-print';
 import CentralModal from '../../../components/modal-central';
 import CustomToast from '../../../components/toast';
 import { useUnidade } from '../../../contexts';
@@ -60,24 +58,14 @@ const ListaCompra = () => {
 
     const adicionarItem = async () => {
         try {
-            if (!unidadeId) {
-                CustomToast({ type: "error", message: "Unidade não selecionada!" });
-                return;
-            }
-
             setLoading(true);
             await criarListaCompra(produto, quantidade, unidadeId);
-            CustomToast({ type: "success", message: "Item adicionado com sucesso!" });
             setModalAberto(false);
             setProduto("");
             setQuantidade("");
             buscarItensLista();
         } catch (error) {
             console.error("Erro ao adicionar item:", error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message || "Erro ao adicionar item!"
-            });
         } finally {
             setLoading(false);
         }

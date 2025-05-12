@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import MenuMobile from '../../components/menu-mobile';
 import HeaderPerfil from '../../components/navbars/perfil';
-import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
-import HeaderCadastro from '../../components/navbars/cadastro';
 import CadastroImagem from '../../assets/svg/cadastro.svg';
 import Navbar from '../../components/navbars/header';
 import { motion } from 'framer-motion';
 import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import HeaderCursos from '../../components/navbars/cursos';
 
 const Cursos = () => {
     const [efeito, setEfeito] = useState(false);
@@ -41,7 +40,7 @@ const Cursos = () => {
                     </h1>
                     <div className=" items-center justify-center lg:justify-start w-full flex mt-[40px] gap-2 flex-wrap md:items-start">
                         <div className='w-[100%] md:w-[60%] lg:w-[14%]'>
-                            <HeaderCadastro />
+                            <HeaderCursos />
                         </div>
                         <div className={`w-[100%] lg:w-[80%] flex-col flex items-center justify-center transition-opacity duration-500 ${efeito ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
                             <img className='w-[30%]' src={CadastroImagem} alt="Cadastro" />

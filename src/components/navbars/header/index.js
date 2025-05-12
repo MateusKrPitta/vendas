@@ -20,10 +20,7 @@ const Navbar = ({ user }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [showCadastroSubMenu, setShowCadastroSubMenu] = useState(false);
 
-
     const tipoUsuario = localStorage.getItem('tipo');
-
-
     const isUsuarioTipo3 = tipoUsuario === "3";
 
     const toggleMenu = () => {
@@ -52,11 +49,9 @@ const Navbar = ({ user }) => {
                 <div className={`transition-all w-64 h-screen bg-cover bg-no-repeat bg-center flex flex-col p-5`} style={{ backgroundColor: '#d2d7db' }}>
                     <div className="flex flex-col justify-center items-center mb-5 cursor-pointer" onClick={() => handleNavigate("/dashboard")}>
                         <img src={logo} alt="Logo" style={{ borderRadius: "10px", width: '50%' }} title={user ? "Clique para acessar a Dashboard" : ''} className="w-24" />
-
                     </div>
 
                     <div className="flex flex-col gap-2 text-white overflow-hidden transition-all">
-
                         <>
                             <label className="text-sm mt-1 text-primary font-bold">Home</label>
                             <button
@@ -79,35 +74,39 @@ const Navbar = ({ user }) => {
                             <span>Vendas</span>
                         </button>
 
+                        {!isUsuarioTipo3 && (
+                            <>
+                                <button
+                                    onClick={() => handleNavigate("/saidas")}
+                                    className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/saidas" ? "border-b-2 border-secundary" : ""}`}
+                                    title={'Saídas'}
+                                >
+                                    <AddToQueueIcon fontSize={"small"} />
+                                    <span>Saídas</span>
+                                </button>
 
-
-                        <button
-                            onClick={() => handleNavigate("/saidas")}
-                            className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/saidas" ? "border-b-2 border-secundary" : ""}`}
-                            title={'Saídas'}
-                        >
-                            <AddToQueueIcon fontSize={"small"} />
-                            <span>Saídas</span>
-                        </button>
-
+                                <button
+                                    onClick={() => handleNavigate("/relatorio")}
+                                    className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/relatorio" ? "border-b-2 border-secundary" : ""}`}
+                                    title={'Relatório'}
+                                >
+                                    <DataThresholdingIcon fontSize={"small"} />
+                                    <span>Relatório</span>
+                                </button>
+                            </>
+                        )}
+                        
                         {!isUsuarioTipo3 && (
                             <button
-                                onClick={() => handleNavigate("/relatorio")}
-                                className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/relatorios" ? "border-b-2 border-secundary" : ""}`}
-                                title={'Relatório'}
+                                onClick={() => handleNavigate("/cursos")}
+                                className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/cursos" ? "border-b-2 border-secundary" : ""}`}
+                                title={'Cursos'}
                             >
-                                <DataThresholdingIcon fontSize={"small"} />
-                                <span>Relatório</span>
+                                <VideoCameraFrontIcon fontSize={"small"} />
+                                <span>Cursos</span>
                             </button>
                         )}
-                        <button
-                            onClick={() => handleNavigate("/cursos")}
-                            className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/saidas" ? "border-b-2 border-secundary" : ""}`}
-                            title={'Saídas'}
-                        >
-                            <VideoCameraFrontIcon fontSize={"small"} />
-                            <span>Cursos</span>
-                        </button>
+                        
                         <label className="text-sm mt-1 text-primary font-bold">Configurações</label>
                         <button
                             onClick={() => handleNavigate("/cadastro")}
@@ -148,7 +147,7 @@ const Navbar = ({ user }) => {
                         </div>
 
                         <List>
-                            {/* Exibir "Dashboard" apenas se não for usuário tipo 3 */}
+                           
                             {!isUsuarioTipo3 && (
                                 <Button
                                     fullWidth
@@ -169,7 +168,6 @@ const Navbar = ({ user }) => {
                                 </Button>
                             )}
 
-                            {/* Exibir "Cadastro" e submenu apenas se não for usuário tipo 3 */}
                             {!isUsuarioTipo3 && (
                                 <div>
                                     <Button
@@ -230,24 +228,45 @@ const Navbar = ({ user }) => {
                                 </div>
                             )}
 
-                            {/* Exibir "Relatório" para todos os usuários */}
-                            <Button
-                                fullWidth
-                                onClick={() => handleNavigate("/relatorio")}
-                                startIcon={<BarChartIcon fontSize="small" />}
-                                className="text-left"
-                                title="Ir para Relatorio"
-                                sx={{
-                                    justifyContent: "flex-start",
-                                    padding: "10px 16px",
-                                    textTransform: "none",
-                                    "&:hover": {
-                                        backgroundColor: "#f4f4f4",
-                                    },
-                                }}
-                            >
-                                Relatório
-                            </Button>
+                            {!isUsuarioTipo3 && (
+                                <>
+                                    <Button
+                                        fullWidth
+                                        onClick={() => handleNavigate("/relatorio")}
+                                        startIcon={<BarChartIcon fontSize="small" />}
+                                        className="text-left"
+                                        title="Ir para Relatorio"
+                                        sx={{
+                                            justifyContent: "flex-start",
+                                            padding: "10px 16px",
+                                            textTransform: "none",
+                                            "&:hover": {
+                                                backgroundColor: "#f4f4f4",
+                                            },
+                                        }}
+                                    >
+                                        Relatório
+                                    </Button>
+                                    
+                                    <Button
+                                        fullWidth
+                                        onClick={() => handleNavigate("/cursos")}
+                                        startIcon={<VideoCameraFrontIcon fontSize="small" />}
+                                        className="text-left"
+                                        title="Ir para Cursos"
+                                        sx={{
+                                            justifyContent: "flex-start",
+                                            padding: "10px 16px",
+                                            textTransform: "none",
+                                            "&:hover": {
+                                                backgroundColor: "#f4f4f4",
+                                            },
+                                        }}
+                                    >
+                                        Cursos
+                                    </Button>
+                                </>
+                            )}
                         </List>
                     </div>
                 </Drawer>

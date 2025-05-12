@@ -12,7 +12,10 @@ import { motion } from 'framer-motion';
 import {
   DateRange,
   CalendarToday,
-  KeyboardArrowDown
+  KeyboardArrowDown,
+  Search,
+  DateRange as DateRangeIcon,
+  Clear
 } from '@mui/icons-material';
 import { buscarRelatorioVendas } from '../../../service/get/relatorios_vendas';
 import {
@@ -22,10 +25,14 @@ import {
   MenuItem,
   OutlinedInput,
   Box,
-  Chip
+  Chip,
+  TextField,
+  InputAdornment,
+  IconButton
 } from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { useUnidade } from '../../../contexts';
-import CustomToast from '../../../components/toast';
 
 const RelatorioVendas = () => {
   const { unidadeId } = useUnidade();
@@ -33,6 +40,13 @@ const RelatorioVendas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [anoSelecionado, setAnoSelecionado] = useState('todos');
+  // Estados para os filtros
+  const [filtros, setFiltros] = useState({
+    produto: '',
+    categoria: '',
+    dataInicio: null,
+    dataFim: null
+  });
 
   const fadeIn = {
     hidden: { opacity: 0 },
@@ -40,9 +54,10 @@ const RelatorioVendas = () => {
   };
 
   const formatarData = (dataString) => {
-    return moment(dataString).format('DD/MM/YYYY');
+    if (!dataString) return 'Data inválida';
+    const data = moment(dataString);
+    return data.isValid() ? data.format('DD/MM/YYYY') : 'Data inválida';
   };
-
 
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -53,38 +68,49 @@ const RelatorioVendas = () => {
 
   const carregarRelatorios = async () => {
     try {
-        setLoading(true);
-        const response = await buscarRelatorioVendas(unidadeId); 
+      setLoading(true);
+      const response = await buscarRelatorioVendas(unidadeId);
 
-       
-        if (!response || !response.data || !Array.isArray(response.data)) {
-            throw new Error("Dados de relatório inválidos");
-        }
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error("Dados de relatório inválidos");
+      }
 
-        const dadosOrdenados = response.data.sort((a, b) => {
-            if (a.ano !== b.ano) return b.ano - a.ano;
-            return b.mes - a.mes;
-        });
+      const dadosOrdenados = response.data.sort((a, b) => {
+        if (a.ano !== b.ano) return b.ano - a.ano;
+        return b.mes - a.mes;
+      });
 
-        setRelatorios(dadosOrdenados);
-        setLoading(false);
+      setRelatorios(dadosOrdenados);
+      setLoading(false);
     } catch (err) {
-        setError(err.message);
-        setLoading(false);
-        CustomToast({
-            type: "error",
-            message: `Erro ao carregar relatórios: ${err.message}`
-        });
+      setError(err.message);
+      setLoading(false);
     }
-};
+  };
 
   useEffect(() => {
-    if (unidadeId) { 
+    if (unidadeId) {
       carregarRelatorios();
     }
   }, [unidadeId]);
 
-  
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+    setFiltros(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+
+
+  const handleDateChange = (name, date) => {
+    setFiltros(prev => ({
+      ...prev,
+      [name]: date
+    }));
+  };
+
   const relatoriosPorAno = relatorios.reduce((acc, relatorio) => {
     const ano = relatorio.ano;
     if (!acc[ano]) {
@@ -110,14 +136,14 @@ const RelatorioVendas = () => {
   }, {});
 
   const colunasVendas = [
-    { 
-      key: 'produto', 
-      label: 'Produto', 
-      width: 150 
+    {
+      key: 'produto',
+      label: 'Produto',
+      width: 150
     },
-    { 
-      key: 'quantidade', 
-      label: 'Quantidade', 
+    {
+      key: 'quantidade',
+      label: 'Quantidade',
       width: 120,
       align: 'center'
     },
@@ -125,15 +151,15 @@ const RelatorioVendas = () => {
       key: 'valor',
       label: 'Valor Unitário',
       width: 120,
-      align: 'right', 
-      format: (value) => formatarMoeda(value) 
+      align: 'right',
+      format: (value) => formatarMoeda(value)
     },
     {
       key: 'valorTotal',
       label: 'Valor Total',
       width: 120,
-      align: 'right', 
-      format: (value) => formatarMoeda(value) 
+      align: 'right',
+      format: (value) => formatarMoeda(value)
     },
     {
       key: 'data',
@@ -147,13 +173,62 @@ const RelatorioVendas = () => {
       width: 150
     }
   ];
+
+  const filtrarVendas = (vendas) => {
+    if (!vendas) return [];
+
+    return vendas.filter(venda => {
+      // Filtro por produto
+      const produtoNome = venda.produto || venda.nome || '';
+      const produtoMatch = produtoNome.toString().toLowerCase().includes(filtros.produto.toLowerCase());
+
+      // Filtro por categoria
+      let categoriaNome = '';
+      if (typeof venda.categoria === 'string') {
+        categoriaNome = venda.categoria;
+      } else if (venda.categoria && typeof venda.categoria.nome === 'string') {
+        categoriaNome = venda.categoria.nome;
+      }
+
+      const categoriaMatch =
+        filtros.categoria === '' ||
+        categoriaNome.toString().toLowerCase().includes(filtros.categoria.toLowerCase());
+
+      // Filtro por data (usando inputs nativos)
+      let dataMatch = true;
+      if (filtros.dataInicio || filtros.dataFim) {
+        const dataVenda = moment(venda.data || venda.data_venda);
+        if (!dataVenda.isValid()) return false;
+
+        if (filtros.dataInicio) {
+          const dataInicio = moment(filtros.dataInicio).startOf('day');
+          dataMatch = dataMatch && dataVenda.isSameOrAfter(dataInicio);
+        }
+        if (filtros.dataFim) {
+          const dataFim = moment(filtros.dataFim).endOf('day');
+          dataMatch = dataMatch && dataVenda.isSameOrBefore(dataFim);
+        }
+      }
+
+      return produtoMatch && categoriaMatch && dataMatch;
+    });
+  };
+
+  const limparFiltrosData = () => {
+    setFiltros(prev => ({
+      ...prev,
+      dataInicio: null,
+      dataFim: null
+    }));
+  };
+
   return (
     <div className="flex w-full">
       <Navbar />
       <div className='flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2'>
         <MenuMobile />
         <motion.div
-          style={{ width: '100%' }}
+
           initial="hidden"
           animate="visible"
           variants={fadeIn}
@@ -237,7 +312,7 @@ const RelatorioVendas = () => {
                     </div>
 
                     {dadosAno.meses.map((relatorio) => {
-                  
+                      const vendasFiltradas = filtrarVendas(relatorio.vendas);
 
                       return (
                         <Acordion
@@ -257,31 +332,120 @@ const RelatorioVendas = () => {
                           }
                           informacoes={
                             <div className="p-4 bg-white">
-                              <div style={{ height: 400, width: '100%' }}>
-                                {relatorio.vendas && relatorio.vendas.length > 0 ? (
-                                  <TableComponent
-                                  headers={colunasVendas}
-                                  rows={relatorio.vendas.map(venda => {
-                                    const valor = Number(venda.valor);
-                                    const quantidade = Number(venda.quantidade);
-                                    const valorTotal = valor * quantidade;
-                                    
-                                    return {
-                                      ...venda,
-                                      produto: venda.produto || venda.nome,
-                                      quantidade: quantidade,
-                                      valor: formatarMoeda(valor),
-                                      valorTotal: formatarMoeda(valorTotal), 
-                                      data: formatarData(venda.data || venda.data_venda),
-                                      categoria: venda.categoria?.nome || venda.categoria || 'Sem categoria'
-                                    };
-                                  })}
-                                  pageSize={5}
-                                  checkboxSelection={false}
+                              {/* Filtros */}
+                              <div className="flex gap-4 mb-4 flex-wrap">
+                                <TextField
+                                  label="Filtrar por produto"
+                                  variant="outlined"
+                                  size="small"
+                                  name="produto"
+                                  value={filtros.produto}
+                                  onChange={handleFiltroChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Search />
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
+
+                                <TextField
+                                  label="Filtrar por categoria"
+                                  variant="outlined"
+                                  size="small"
+                                  name="categoria"
+                                  value={filtros.categoria}
+                                  onChange={handleFiltroChange}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Search />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+
+                                <div className='flex items-center gap-2 w-[50%]'> <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="pt-br">
+                                  <DatePicker
+                                    label="Data Início"
+                                    value={filtros.dataInicio}
+                                    onChange={(date) => handleDateChange('dataInicio', date)}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        size="small"
+                                        InputProps={{
+                                          ...params.InputProps,
+                                          startAdornment: (
+                                            <InputAdornment position="start">
+                                              <DateRangeIcon />
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                    )}
+                                  />
+
+                                  <DatePicker
+                                    label="Data Fim"
+                                    value={filtros.dataFim}
+                                    onChange={(date) => handleDateChange('dataFim', date)}
+                                    minDate={filtros.dataInicio}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        size="small"
+                                        InputProps={{
+                                          ...params.InputProps,
+                                          startAdornment: (
+                                            <InputAdornment position="start">
+                                              <DateRangeIcon />
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                    )}
+                                  />
+                                </LocalizationProvider></div>
+
+                                {(filtros.dataInicio || filtros.dataFim) && (
+                                  <IconButton
+                                    size="small"
+                                    style={{color:'#0d2d43'}}
+                                    onClick={limparFiltrosData}
+                                    title="Limpar Filtro"
+                                  >
+                                    <Clear />
+                                  </IconButton>
+                                )}
+                              </div>
+
+                              <div style={{ height: 400, width: '100%' }}>
+                                {vendasFiltradas && vendasFiltradas.length > 0 ? (
+                                  <TableComponent
+                                    headers={colunasVendas}
+                                    rows={vendasFiltradas.map(venda => {
+                                      const valor = Number(venda.valor);
+                                      const quantidade = Number(venda.quantidade);
+                                      const valorTotal = valor * quantidade;
+
+                                      return {
+                                        ...venda,
+                                        produto: venda.produto || venda.nome,
+                                        quantidade: quantidade,
+                                        valor: valor,
+                                        valorTotal: valorTotal,
+                                        data: formatarData(venda.data || venda.data_venda),
+                                        categoria: venda.categoria?.nome || venda.categoria || 'Sem categoria'
+                                      };
+                                    })}
+                                    pageSize={5}
+                                    checkboxSelection={false}
+                                  />
                                 ) : (
-                                  <div className="flex items-center justify-center h-full">
-                                    Nenhuma venda encontrada para este período
+                                  <div className="flex items-center justify-center h-full ">
+                                    <label className='font-sm '>Nenhuma venda encontrada para este período</label>
                                   </div>
                                 )}
                               </div>

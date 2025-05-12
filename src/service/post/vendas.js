@@ -12,12 +12,19 @@ export const criarVendas = async (vendaData) => {
     }
 
     try {
-        const response = await https.post('/vendas', vendaData, {
+        // Força o envio da data como string no formato ISO
+        const payload = {
+            ...vendaData,
+            data_venda: vendaData.data_venda // Já deve estar formatado
+        };
+
+        const response = await https.post('/vendas', payload, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
             },
         });
+        
         CustomToast({ 
             type: "success", 
             message: "Venda cadastrada com sucesso!" 
@@ -25,7 +32,6 @@ export const criarVendas = async (vendaData) => {
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || 
-                           error.response?.data?.success || 
                            "Erro ao cadastrar venda";
         CustomToast({ type: "error", message: errorMessage });
         throw error;

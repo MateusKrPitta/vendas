@@ -12,7 +12,6 @@ import { categorias } from '../../../entities/headers/categoria';
 import { buscarCategoria } from '../../../service/get/categoria';
 import CentralModal from '../../../components/modal-central';
 import { criarCategoria } from '../../../service/post/categoria';
-import CustomToast from '../../../components/toast';
 import { useUnidade } from '../../../contexts';
 import ModalLateral from '../../../components/modal-lateral';
 import { atualizarCategoria } from '../../../service/put/categoria';
@@ -63,23 +62,14 @@ const Categoria = () => {
 
     const CadastrarNovasCategoria = async () => {
         try {
-            if (!unidadeId) {
-                CustomToast({ type: "error", message: "Unidade não selecionada!" });
-                return;
-            }
 
             setLoading(true);
           
             await criarCategoria(nomeCategoria, unidadeId);
-            CustomToast({ type: "success", message: "Categoria cadastrada com sucesso!" });
             setCadastrarCategoria(false);
             listaCategorias();
         } catch (error) {
             console.error("Erro detalhado:", error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message || "Erro ao cadastrar categoria!"
-            });
         } finally {
             setLoading(false);
         }
@@ -87,10 +77,6 @@ const Categoria = () => {
 
     const SalvarCategoriaEditado = async () => {
         try {
-            if (!unidadeId || !categoriaEditando?.id) {
-                CustomToast({ type: "error", message: "Dados incompletos para edição!" });
-                return;
-            }
 
             setLoading(true);
             await atualizarCategoria(
@@ -98,15 +84,11 @@ const Categoria = () => {
                 unidadeId,
                 categoriaEditando.id 
             );
-            CustomToast({ type: "success", message: "Categoria editada com sucesso!" });
             setEditando(false);
             listaCategorias(); 
         } catch (error) {
             console.error("Erro ao editar categoria:", error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message || "Erro ao editar categoria!"
-            });
+           
         } finally {
             setLoading(false);
         }
@@ -116,18 +98,13 @@ const Categoria = () => {
         try {
             if (categoria.ativo) {
                 await inativaCategoria(categoria.id);
-                CustomToast({ type: "success", message: "Categoria inativada com sucesso!" });
             } else {
                 await ativaCategoria(categoria.id);
-                CustomToast({ type: "success", message: "Categoria ativada com sucesso!" });
             }
             listaCategorias();
         } catch (error) {
             console.error("Erro ao alterar status da categoria:", error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message || "Erro ao alterar status da categoria!"
-            });
+           
         }
     };
 

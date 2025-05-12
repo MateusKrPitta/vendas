@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../../components/navbars/header";
 import HeaderPerfil from "../../../components/navbars/perfil";
 import ButtonComponent from "../../../components/button";
-import HeaderCadastro from "../../../components/navbars/cadastro";
 import TableComponent from "../../../components/table";
 import CentralModal from "../../../components/modal-central";
 import ModalLateral from "../../../components/modal-lateral";
 import MenuMobile from "../../../components/menu-mobile";
 import CustomToast from "../../../components/toast";
-import CategoryIcon from '@mui/icons-material/Category';
 import { InputAdornment, TextField } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,14 +36,12 @@ const ListaFornecedor = () => {
 
   const buscaFornecedores = async () => {
     try {
-      const fornecedoresData = await buscarFornecedor();
-      const formattedFornecedores = cadastrosFornecedores(fornecedoresData);
-      setFornecedorCadastradas(formattedFornecedores);
+      const response = await buscarFornecedor();
+      setFornecedorCadastradas(response.data);
     } catch (error) {
       console.error("Erro ao buscar fornecedores:", error);
     }
   };
-
   useEffect(() => {
     buscaFornecedores();
   }, []);
@@ -71,7 +67,6 @@ const ListaFornecedor = () => {
     try {
       setLoading(true);
       await criarFornecedor(nomeFornecedor, telefoneFornecedor);
-      CustomToast({ type: "success", message: "Fornecedor cadastrado com sucesso!" });
       setCadastrarUnidade(false);
       buscaFornecedores();
     } catch (error) {
@@ -87,12 +82,10 @@ const ListaFornecedor = () => {
       setLoading(true);
 
       await atualizarFornecedor(nomeFornecedor, telefoneFornecedor, unidadeEditando);
-      CustomToast({ type: "success", message: "Fornecedor editado com sucesso!" });
       setEditando(false);
       buscaFornecedores();
     } catch (error) {
       console.error("Erro ao editar fornecedor:", error);
-      setMensagemErro(error.message || "Erro ao editar fornecedor");
     } finally {
       setLoading(false);
     }
@@ -105,16 +98,13 @@ const ListaFornecedor = () => {
       setLoading(true);
       if (row.status === "ativo") {
         await inativarFornecedor(row.id);
-        CustomToast({ type: "success", message: "Fornecedor inativado com sucesso!" });
       } else {
 
         await reativaFornecedor(row.id);
-        CustomToast({ type: "success", message: "Fornecedor reativado com sucesso!" });
       }
       buscaFornecedores();
     } catch (error) {
       console.error("Erro ao alterar status do fornecedor:", error);
-      CustomToast({ type: "error", message: error.message || "Erro ao alterar status" });
     } finally {
       setLoading(false);
     }

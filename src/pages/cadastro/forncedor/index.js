@@ -7,7 +7,6 @@ import TableComponent from "../../../components/table";
 import CentralModal from "../../../components/modal-central";
 import ModalLateral from "../../../components/modal-lateral";
 import MenuMobile from "../../../components/menu-mobile";
-import CustomToast from "../../../components/toast";
 import CategoryIcon from '@mui/icons-material/Category';
 import { InputAdornment, TextField } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -17,7 +16,6 @@ import { fornecedores } from "../../../entities/headers/fornecedores";
 import { criarFornecedor } from "../../../service/post/fornecedor";
 import { motion } from 'framer-motion';
 import { buscarFornecedor } from "../../../service/get/fornecedor";
-import { cadastrosFornecedores } from "../../../entities/class/cadastro/fornecedor";
 import { atualizarFornecedor } from "../../../service/put/forncedor";
 import { TelefoneInput } from "../../../utils/mascaras/telefone";
 
@@ -37,9 +35,8 @@ const Fornecedor = () => {
 
   const buscaFornecedores = async () => {
     try {
-      const fornecedoresData = await buscarFornecedor();
-      const formattedFornecedores = cadastrosFornecedores(fornecedoresData);
-      setFornecedorCadastradas(formattedFornecedores);
+      const response = await buscarFornecedor();
+      setFornecedorCadastradas(response.data);
     } catch (error) {
       console.error("Erro ao buscar fornecedores:", error);
     }
@@ -70,7 +67,6 @@ const Fornecedor = () => {
     try {
       setLoading(true);
       await criarFornecedor(nomeFornecedor, telefoneFornecedor);
-      CustomToast({ type: "success", message: "Fornecedor cadastrado com sucesso!" });
       setCadastrarUnidade(false);
       buscaFornecedores();
     } catch (error) {
@@ -86,7 +82,6 @@ const Fornecedor = () => {
       setLoading(true);
 
       await atualizarFornecedor(nomeFornecedor, telefoneFornecedor, unidadeEditando);
-      CustomToast({ type: "success", message: "Fornecedor editado com sucesso!" });
       setEditando(false);
       buscaFornecedores();
     } catch (error) {
@@ -104,16 +99,13 @@ const Fornecedor = () => {
       setLoading(true);
       if (row.status === "ativo") {
         await inativarFornecedor(row.id);
-        CustomToast({ type: "success", message: "Fornecedor inativado com sucesso!" });
       } else {
 
         await reativaFornecedor(row.id);
-        CustomToast({ type: "success", message: "Fornecedor reativado com sucesso!" });
       }
       buscaFornecedores();
     } catch (error) {
       console.error("Erro ao alterar status do fornecedor:", error);
-      CustomToast({ type: "error", message: error.message || "Erro ao alterar status" });
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,7 @@ import SelectTextFields from "../../../components/select";
 import Checkbox from '@mui/material/Checkbox';
 import MenuMobile from "../../../components/menu-mobile";
 import ModalLateral from "../../../components/modal-lateral";
-import { Close, Edit, } from '@mui/icons-material';
+import { Close, Edit, FacebookOutlined, WhatsApp, } from '@mui/icons-material';
 import TableLoading from "../../../components/loading/loading-table/loading";
 import { Box, Chip, FormControlLabel, IconButton, InputAdornment, TextField } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
@@ -16,7 +16,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import NotesIcon from '@mui/icons-material/Notes';
 import { LocationOnOutlined, Password } from "@mui/icons-material";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CustomToast from "../../../components/toast";
 import TableComponent from "../../../components/table";
 import { buscarUnidades } from "../../../service/get/unidade";
@@ -27,8 +26,9 @@ import { atualizarUsuario } from "../../../service/put/usuario";
 import { inativarUsuario } from "../../../service/delete/usuario";
 import { reativaUsuario } from "../../../service/reativa/usuario";
 import { motion } from 'framer-motion';
+import HeaderCursos from "../../../components/navbars/cursos";
 
-const Usuario = () => {
+const WhatsAppCurso = () => {
 
   const [editando, setEditando] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,6 +62,7 @@ const Usuario = () => {
       setUnidades(unidadesFormatadas);
     } catch (error) {
       console.error('Erro ao buscar unidades:', error);
+      CustomToast('Erro ao buscar unidades!', 'error');
     }
   };
 
@@ -105,6 +106,7 @@ const Usuario = () => {
       setUsers(usuariosFormatados);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
+      CustomToast('Erro ao buscar usuários!', 'error');
     } finally {
       setLoading(false);
     }
@@ -113,10 +115,12 @@ const Usuario = () => {
   const CadastrarUsuario = async () => {
     try {
       await criarUsuario(nomeCompleto, email, senha, unidadesSelecionadas, permissao);
+      CustomToast('Usuário cadastrado com sucesso!', 'success');
       setCadastroUsuario(false);
       buscarUsuariosCadastrados();
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error);
+      CustomToast('Erro ao cadastrar usuário!', 'error');
     }
   };
 
@@ -131,10 +135,12 @@ const Usuario = () => {
         senha || undefined,
         unidadesSelecionadas 
       );
+      CustomToast('Usuário editado com sucesso!', 'success');
       setEditando(false);
       buscarUsuariosCadastrados();
     } catch (error) {
       console.error("Erro ao editar usuário:", error);
+      CustomToast(error.response?.data?.message || 'Erro ao editar usuário!', 'error');
     }
   };
   const handleCloseEdicao = () => {
@@ -207,11 +213,11 @@ const Usuario = () => {
         >
           <HeaderPerfil />
           <h1 className='justify-center md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex gap-2 '>
-            <AccountCircleIcon />Usuário
+            <WhatsApp />WhatsApp
           </h1>
           <div className=" items-center w-full flex mt-[40px] gap-2 flex-wrap md:items-start">
             <div className="hidden lg:w-[14%] lg:flex">
-              <HeaderCadastro />
+              <HeaderCursos />
             </div>
             <div className="w-[100%] itens-center mt-2 ml-2 sm:mt-0 md:flex md:justify-start flex-col lg:w-[80%]">
               <div className="flex gap-2 flex-wrap w-full justify-center md:justify-start">
@@ -545,4 +551,4 @@ const Usuario = () => {
   );
 }
 
-export default Usuario;
+export default WhatsAppCurso;

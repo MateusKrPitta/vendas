@@ -3,9 +3,9 @@ import AddchartIcon from '@mui/icons-material/Addchart';
 import Navbar from '../../components/navbars/header';
 import MenuMobile from '../../components/menu-mobile';
 import HeaderPerfil from '../../components/navbars/perfil';
-import { AddCircleOutline, Category, DataArray, Edit, Money, Numbers, ProductionQuantityLimits, Save } from '@mui/icons-material';
+import { AddCircleOutline, Category, Edit, Money, Numbers, ProductionQuantityLimits, Save } from '@mui/icons-material';
 import ButtonComponent from '../../components/button';
-import { Autocomplete, Checkbox, FormControlLabel, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, InputAdornment, TextField } from '@mui/material';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import SelectTextFields from '../../components/select';
 import TableComponent from '../../components/table';
@@ -18,9 +18,8 @@ import Total from '../../assets/icones/moedas.png'
 import ModalLateral from '../../components/modal-lateral';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import { criarVendas } from '../../service/post/vendas';
-import NumberFormat, { NumericFormat } from 'react-number-format';
-import { useUnidade } from '../../contexts';
-import CustomToast from '../../components/toast';
+import { NumericFormat } from 'react-number-format';
+import { useUnidade } from '../../contexts'
 import { buscarVendas } from '../../service/get/vendas';
 import { atualizarVendas } from '../../service/put/vendas';
 import { deletarVendas } from '../../service/delete/vendas';
@@ -85,32 +84,30 @@ const Vendas = () => {
         return Object.keys(novosErros).length === 0;
     };
 
-const handleEdit = (row) => {
-    let venda = vendas.find(v => v.id === row.id);
+    const handleEdit = (row) => {
+        let venda = vendas.find(v => v.id === row.id);
 
-    if (!venda) {
-        venda = vendas.find(v =>
-            (v.produto === row.produto || v.nome === row.produto) &&
-            v.quantidade === row.quantidade
-        );
-    }
+        if (!venda) {
+            venda = vendas.find(v =>
+                (v.produto === row.produto || v.nome === row.produto) &&
+                v.quantidade === row.quantidade
+            );
+        }
 
-    if (venda) {
-        // Encontra o objeto completo da categoria
-        const categoriaCompleta = categoriasFiltradas.find(
-            cat => cat.id.toString() === venda.categoria_id?.toString()
-        );
+        if (venda) {
+            console.log("Venda encontrada:", venda);
+            console.log("Categoria da venda:", venda.categoria);
 
-        setVendaEditando({
-            ...venda,
-            id: venda.id || venda._id,
-            categoriaObject: categoriaCompleta || null // Adiciona o objeto completo da categoria
-        });
-        setEditando(true);
-    } else {
-        CustomToast({ type: "error", message: "Venda não encontrada para edição" });
-    }
-};
+            setVendaEditando({
+                ...venda,
+                id: venda.id || venda._id,
+                categoriaObject: venda.categoria || null, // Usa o objeto de categoria que já vem na venda
+                categoria_id: venda.categoria?.id || null // Mantém o ID da categoria também
+            });
+            setEditando(true);
+        }
+    };
+
     const limparCampos = () => {
         setProduto('');
         setQuantidade(0);
@@ -121,28 +118,57 @@ const handleEdit = (row) => {
     };
 
     const adicionarVenda = async () => {
-        if (!validarCampos()) {
-            CustomToast({ type: "error", message: "Preencha todos os campos corretamente" });
-            return;
-        }
+        if (!validarCampos()) return;
+
+        // Garante que usaremos a data selecionada ou a atual
+        const dataParaEnvio = data || new Date().toISOString().split('T')[0];
+
+        // Formata a data no formato que a API espera
+        const dataFormatada = formatarDataParaAPI(dataParaEnvio);
 
         const vendaData = {
             nome: produto,
             quantidade: quantidade,
-            valor: valor,
+            valor: valor.toFixed(2), // Garante 2 casas decimais
             forma_pagamento: Number(formaPagamento),
             unidade_id: Number(unidadeId),
             categoria_id: Number(categoriaSelecionada),
-            data_venda: new Date(data).toISOString()
+            data_venda: dataFormatada
         };
 
+        console.log("Dados sendo enviados:", vendaData); // Para debug
+
         try {
-            await criarVendas(vendaData);
+            const response = await criarVendas(vendaData);
+            console.log("Resposta da API:", response); // Para debug
+
             limparCampos();
-            buscarVendasDoDia(data);
+            buscarVendasDoDia(dataParaEnvio);
         } catch (error) {
             console.error("Erro ao adicionar venda:", error);
         }
+    };
+
+    const formatarDataParaAPI = (dataString) => {
+        // Se a data já está no formato ISO (vindo do estado)
+        if (dataString.includes('T')) {
+            return dataString;
+        }
+
+        // Para datas no formato YYYY-MM-DD
+        const partes = dataString.split('-');
+        if (partes.length === 3) {
+            // Cria a data em UTC meia-noite para evitar problemas de timezone
+            const dataUTC = new Date(Date.UTC(
+                parseInt(partes[0]),
+                parseInt(partes[1]) - 1,
+                parseInt(partes[2]),
+                12, 0, 0 // Meio-dia UTC para evitar problemas de timezone
+            ));
+            return dataUTC.toISOString();
+        }
+
+        return new Date().toISOString();
     };
 
     const salvarEdicao = async () => {
@@ -173,25 +199,28 @@ const handleEdit = (row) => {
                 dataISO
             );
 
-            CustomToast({ type: "success", message: "Venda atualizada com sucesso!" });
             setEditando(false);
             setVendaEditando(null);
             buscarVendasDoDia(data);
         } catch (error) {
             console.error("Erro ao atualizar venda:", error);
-            CustomToast({ type: "error", message: error.response?.data?.message || "Erro ao atualizar venda" });
+
         }
     };
 
 
-    const buscarVendasDoDia = async (data) => {
+    const buscarVendasDoDia = async (dataBusca) => {
         setCarregando(true);
         try {
-            const response = await buscarVendas(data, unidadeId);
+            // Remove o horário se existir, mantendo apenas a parte da data (YYYY-MM-DD)
+            const dataParaBusca = dataBusca.includes('T')
+                ? dataBusca.split('T')[0]
+                : dataBusca;
+
+            const response = await buscarVendas(dataParaBusca, unidadeId);
             setVendas(response.data?.vendas || []);
         } catch (error) {
             console.error("Erro ao buscar vendas:", error);
-            CustomToast({ type: "error", message: "Erro ao carregar vendas" });
         } finally {
             setCarregando(false);
         }
@@ -257,7 +286,6 @@ const handleEdit = (row) => {
             buscarVendasDoDia(data);
         } catch (error) {
             console.error("Erro ao deletar venda:", error);
-            CustomToast({ type: "error", message: error.message || "Erro ao deletar venda" });
         }
     };
 
@@ -484,9 +512,9 @@ const handleEdit = (row) => {
                         </div>
                         <div className='flex w-full items-center justify-center gap-2 flex-wrap'>
                             {/* Card Pix */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Pix} alt="Pix" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Pix</label>
                                     <label className='text-sm font-bold'>
                                         {totais.pix.toLocaleString('pt-BR', {
@@ -498,9 +526,9 @@ const handleEdit = (row) => {
                             </div>
 
                             {/* Card Dinheiro */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
-                                <div className='flex flex-col gap-2'>
+                                 <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
                                     <label className='text-sm font-bold'>
                                         {totais.dinheiro.toLocaleString('pt-BR', {
@@ -512,9 +540,9 @@ const handleEdit = (row) => {
                             </div>
 
                             {/* Card Débito */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Debito} alt="Débito" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Débito</label>
                                     <label className='text-sm font-bold'>
                                         {totais.debito.toLocaleString('pt-BR', {
@@ -526,9 +554,9 @@ const handleEdit = (row) => {
                             </div>
 
                             {/* Card Crédito */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
-                                <div className='flex flex-col gap-2'>
+                               <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
                                     <label className='text-sm font-bold'>
                                         {totais.credito.toLocaleString('pt-BR', {
@@ -540,9 +568,9 @@ const handleEdit = (row) => {
                             </div>
 
                             {/* Card Total */}
-                            <div className='w-[60%] md:w-[19%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[60%] md:w-[17%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
-                                <div className='flex flex-col gap-2'>
+                                 <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
                                     <label className='text-sm font-bold'>
                                         {totais.geral.toLocaleString('pt-BR', {
@@ -653,41 +681,46 @@ const handleEdit = (row) => {
                                 { value: '4', label: 'Cartão de Débito' }
                             ]}
                         />
-                       <Autocomplete
-    sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '50%' } }}
-    options={categoriasFiltradas}
-    getOptionLabel={(option) => option.nome}
-    value={vendaEditando?.categoriaObject || null} // Usa o objeto completo da categoria
-    onChange={(event, newValue) => {
-        setVendaEditando({
-            ...vendaEditando,
-            categoria_id: newValue ? Number(newValue.id) : null,
-            categoriaObject: newValue // Mantém o objeto completo atualizado
-        });
-    }}
-    renderInput={(params) => (
-        <TextField
-            {...params}
-            label="Categoria"
-            variant="outlined"
-            size="small"
-            InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                    <>
-                        <InputAdornment position="start">
-                            <Category fontSize="small" />
-                        </InputAdornment>
-                        {params.InputProps.startAdornment}
-                    </>
-                ),
-            }}
-        />
-    )}
-    noOptionsText="Nenhuma categoria encontrada"
-    disabled={carregandoCategorias}
-    isOptionEqualToValue={(option, value) => option.id === value.id} // Adicione esta linha
-/>
+                        <Autocomplete
+                            sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '50%' } }}
+                            options={categoriasFiltradas}
+                            getOptionLabel={(option) => option.nome}
+                            value={vendaEditando?.categoriaObject || null}
+                            onChange={(event, newValue) => {
+                                console.log("Nova categoria selecionada:", newValue);
+                                setVendaEditando({
+                                    ...vendaEditando,
+                                    categoria_id: newValue ? Number(newValue.id) : null,
+                                    categoriaObject: newValue,
+                                    categoria: newValue
+                                });
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Categoria"
+                                    variant="outlined"
+                                    size="small"
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: (
+                                            <>
+                                                <InputAdornment position="start">
+                                                    <Category fontSize="small" />
+                                                </InputAdornment>
+                                                {params.InputProps.startAdornment}
+                                            </>
+                                        ),
+                                    }}
+                                />
+                            )}
+                            noOptionsText="Nenhuma categoria encontrada"
+                            disabled={carregandoCategorias}
+                            isOptionEqualToValue={(option, value) => {
+                                console.log("Comparando opções:", option, value);
+                                return option.id === value.id;
+                            }}
+                        />
                         <TextField
                             fullWidth
                             type='date'

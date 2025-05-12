@@ -17,10 +17,14 @@ export const atualizarCategoria = async (nome, unidade_id, id) => {
                 },
             }
         );
+        CustomToast({ 
+            type: "success", 
+            message: response.data.message 
+        });
 
         return response.data;
     } catch (error) {
-        const errorMessage = error.response?.data?.message || error.response?.data?.errors || 'Erro ao atualizar categoria!';
+        const errorMessage = error.response?.data?.message ;
         CustomToast({ type: "error", message: errorMessage });
         throw error;
     }

@@ -1,10 +1,8 @@
-import React from 'react';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ButtonComponent from '../../button';
 import { useNavigate } from 'react-router-dom';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CategoryIcon from '@mui/icons-material/Category';
-import SubjectIcon from '@mui/icons-material/Subject';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import AddCardIcon from '@mui/icons-material/AddCard';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 const HeaderCursos = () => {
     const navigate = useNavigate();
@@ -13,18 +11,16 @@ const HeaderCursos = () => {
 
     const handleNavigation = (section) => {
         switch (section) {
-            case 'fornecedor':
-                navigate('/cadastro/fornecedor');
+            case 'fFacebook':
+                navigate('/cursos/facebook');
                 break;
-            case 'usuario':
-                navigate('/cadastro/usuario');
+            case 'mercado-livre':
+                navigate('/cursos/mercado-livre');
                 break;
-            case 'unidade':
-                navigate('/cadastro/unidade');
+            case 'whatsapp':
+                navigate('/cursos/whatsapp');
                 break;
-            case 'categoria':
-                navigate('/cadastro/categoria');
-                break;
+
             default:
                 console.warn(`Seção desconhecida: ${section}`);
                 break;
@@ -33,50 +29,36 @@ const HeaderCursos = () => {
 
     return (
         <div className="w-[100%] items-center justify-center flex flex-wrap lg:justify-start gap-2 md:gap-1">
-            {/* Botão Usuário - apenas para tipo 1 (Admin) */}
-            {userType === 1 && (
-                <ButtonComponent
-                    startIcon={<AccountCircleIcon fontSize="small" />}
-                    title="Usuário"
-                    buttonSize="large"
-                    onClick={() => handleNavigation('usuario')}
-                    className="w-[35%] sm:w-[50%] md:w-[40%] lg:w-[100%]"
-                />
-            )}
 
-            {/* Botão Unidade - apenas para tipo 1 (Admin) */}
             {userType === 1 && (
                 <>
                     <ButtonComponent
-                        startIcon={<LocationOnIcon fontSize="small" />}
-                        title="Unidade"
+                        startIcon={<FacebookIcon fontSize="small" />}
+                        title="Facebook"
                         buttonSize="large"
-                        onClick={() => handleNavigation('unidade')}
+                        onClick={() => handleNavigation('facebook')}
                         className="w-[35%] sm:w-[50%] md:w-[40%] lg:w-[100%]"
                     />
                     <ButtonComponent
-                        startIcon={<CategoryIcon fontSize="small" />}
-                        title="Fornecedor"
+                        startIcon={<AddCardIcon fontSize="small" />}
+                        title="Mercado Livre"
                         buttonSize="large"
-                        onClick={() => handleNavigation('fornecedor')}
+                        onClick={() => handleNavigation('mercado-livre')}
+                        className="w-[35%] sm:w-[50%] md:w-[40%] lg:w-[100%]"
+                    />
+                    <ButtonComponent
+                        startIcon={<WhatsAppIcon fontSize="small" />}
+                        title="WhatsApp"
+                        buttonSize="large"
+                        onClick={() => handleNavigation('whatsapp')}
                         className="w-[35%] sm:w-[50%] md:w-[40%] lg:w-[100%]"
                     />
                 </>
             )}
 
-            {/* Botão Fornecedor - para todos os tipos */}
 
-
-            {/* Botão Categoria - para todos os tipos */}
-            <ButtonComponent
-                startIcon={<SubjectIcon fontSize="small" />}
-                title="Categoria"
-                buttonSize="large"
-                onClick={() => handleNavigation('categoria')}
-                className="w-[35%] sm:w-[50%] md:w-[40%] lg:w-[100%]"
-            />
         </div>
     );
 };
 
-export default HeaderCadastro;
+export default HeaderCursos;

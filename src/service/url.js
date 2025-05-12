@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `https://api-vendas-4wre.onrender.com/`;
+const API_URL = `http://127.0.0.1:3333`;///https://api-vendas-4wre.onrender.com/
 
 const httpsInstance = () => {
     const httpsAuthenticated = axios.create({

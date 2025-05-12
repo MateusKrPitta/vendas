@@ -7,7 +7,6 @@ import TableComponent from "../../../components/table";
 import CentralModal from "../../../components/modal-central";
 import ModalLateral from "../../../components/modal-lateral";
 import MenuMobile from "../../../components/menu-mobile";
-import CustomToast from "../../../components/toast";
 import { useNavigate } from "react-router-dom";
 import { motion } from 'framer-motion';
 import { InputAdornment, TextField } from "@mui/material";
@@ -90,7 +89,6 @@ const Unidades = () => {
         setCadastrarUnidadeNovas(false);
         setUnidades([...unidades, response]);
         setNomeUnidade("");
-        CustomToast({ type: 'success', message: 'Unidade cadastrada com sucesso!' });
         handleCloseCadastroUnidade();
         buscarUnidadesCadastradas();
       }
@@ -140,7 +138,6 @@ const Unidades = () => {
           unidade.id === updatedUnit.id ? updatedUnit : unidade
         )
       );
-      CustomToast({ type: "success", message: 'Unidade atualizada com sucesso!' });
       setEditando(false);
     } catch (error) {
       console.error("Erro ao atualizar unidade:", error);

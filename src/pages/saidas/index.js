@@ -21,7 +21,6 @@ import { NumericFormat } from 'react-number-format';
 import { SaidasVen } from '../../entities/headers/saidas';
 import { buscarSaidas } from '../../service/get/saidas';
 import { useUnidade } from '../../contexts';
-import CustomToast from '../../components/toast';
 import { deletarSaidas } from '../../service/delete/saidas';
 import { atualizarSaidas } from '../../service/put/saidas';
 import { motion } from 'framer-motion';
@@ -90,16 +89,11 @@ const Saidas = () => {
         } catch (error) {
             console.error("Error fetching data:", error);
             setLoading(false);
-            CustomToast({ type: "error", message: "Erro ao carregar saídas" });
         }
     };
 
     const handleSave = async () => {
         try {
-            if (!unidadeId) {
-                CustomToast({ type: "error", message: "Nenhuma unidade selecionada" });
-                return;
-            }
 
 
             const valorNumerico = Number(formularioPrincipal.valor) || 0;
@@ -121,19 +115,11 @@ const Saidas = () => {
             await buscaSaidas();
         } catch (error) {
             console.error("Erro ao salvar saída:", error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message
-            });
         }
     };
 
     const handleAtualizar = async () => {
         try {
-            if (!saidaEditando || !unidadeId) {
-                CustomToast({ type: "error", message: "Dados incompletos para edição" });
-                return;
-            }
 
             await atualizarSaidas(
                 saidaEditando.id,
@@ -147,7 +133,6 @@ const Saidas = () => {
             setEditando(false);
             setSaidaEditando(null);
         } catch (error) {
-            CustomToast({ type: "error", message: error.message  });
         }
     };
 
@@ -190,11 +175,9 @@ const Saidas = () => {
     const handleDelete = async (id) => {
         try {
             await deletarSaidas(id);
-            CustomToast({ type: "success", message: "Saída deletada com sucesso!" });
             await buscaSaidas();
         } catch (error) {
             console.error("Erro ao deletar saída:", error);
-            CustomToast({ type: "error", message: error.message || "Erro ao deletar saída" });
         }
     };
 
@@ -315,9 +298,9 @@ const Saidas = () => {
                         {/* Cards de totais */}
                         <div className='flex w-full items-center justify-center gap-2 flex-wrap' >
                             {/* Card Dinheiro */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
                                     <label className='text-sm font-bold'>
                                         {totais.dinheiro.toLocaleString('pt-BR', {
@@ -329,9 +312,9 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Pix */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Pix} alt="Pix" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Pix</label>
                                     <label className='text-sm font-bold'>
                                         {totais.pix.toLocaleString('pt-BR', {
@@ -343,9 +326,9 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Débito */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Debito} alt="Débito" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Débito</label>
                                     <label className='text-sm font-bold'>
                                         {totais.debito.toLocaleString('pt-BR', {
@@ -357,9 +340,9 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Crédito */}
-                            <div className='w-[45%] md:w-[19%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
-                                <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
-                                <div className='flex flex-col gap-2'>
+                            <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                                <img style={{ width: '30%' }}  src={Credito} alt="Crédito" />
+                                <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
                                     <label className='text-sm font-bold'>
                                         {totais.credito.toLocaleString('pt-BR', {
@@ -371,9 +354,9 @@ const Saidas = () => {
                             </div>
 
                             {/* Card Total */}
-                            <div className='w-[60%] md:w-[19%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
+                            <div className='w-[60%] md:w-[17%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
-                                <div className='flex flex-col gap-2'>
+                                <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
                                     <label className='text-sm font-bold'>
                                         {totais.total.toLocaleString('pt-BR', {

@@ -30,6 +30,7 @@ export const atualizarVendas = async (
                 "Content-Type": "application/json",
             },
         });
+        CustomToast({ type: "success", message: response.data.message });
         return response.data;
     } catch (error) {
         const errorMessage = error.response?.data?.message || "Erro ao atualizar venda";

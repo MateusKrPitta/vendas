@@ -39,16 +39,18 @@ export const UnidadeProvider = ({ children }) => {
         userData.unidadeStatus = novoStatus;
         localStorage.setItem("user", JSON.stringify(userData));
     };
+useEffect(() => {
+    const loadInitialStatus = async () => {
+        const userData = localStorage.getItem('user');
+        if (!userData) return; // Se não há usuário logado, não faz a requisição
 
-    useEffect(() => {
-        const loadInitialStatus = async () => {
-            if (unidadeId && !unidadeStatus) {
-                const status = await buscarStatusUnidade(unidadeId);
-                setUnidadeStatus(status);
-            }
-        };
-        loadInitialStatus();
-    }, [unidadeId]);
+        if (unidadeId && !unidadeStatus) {
+            const status = await buscarStatusUnidade(unidadeId);
+            setUnidadeStatus(status);
+        }
+    };
+    loadInitialStatus();
+}, [unidadeId]);
 
     return (
         <UnidadeContext.Provider value={{ unidadeId, unidadeStatus, atualizarUnidade }}>
