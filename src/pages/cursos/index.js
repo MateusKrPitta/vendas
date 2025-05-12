@@ -40,11 +40,11 @@ const Cursos = () => {
                     </h1>
                     <div className=" items-center justify-center lg:justify-start w-full flex mt-[40px] gap-2 flex-wrap md:items-start">
                         <div className='w-[100%] md:w-[60%] lg:w-[14%]'>
-                            <HeaderCursos />
+                            {/* <HeaderCursos /> */}
                         </div>
                         <div className={`w-[100%] lg:w-[80%] flex-col flex items-center justify-center transition-opacity duration-500 ${efeito ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
                             <img className='w-[30%]' src={CadastroImagem} alt="Cadastro" />
-                            <h1 className='font-bold text-primary'>Selecione uma opção do menu!</h1>
+                            <h1 className='font-bold text-primary'>Novidades em Breve!</h1>
                         </div>
                     </div>
                 </motion.div>
