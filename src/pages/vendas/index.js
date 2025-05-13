@@ -71,18 +71,23 @@ const Vendas = () => {
         buscarVendasDoDia(hoje);
     }, []);
 
-    const validarCampos = () => {
-        const novosErros = {};
+const validarCampos = () => {
+    const novosErros = {};
+    
+    // Converte valor para número para validação
+    const valorNumerico = typeof valor === 'string' ? 
+        parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) : 
+        Number(valor);
 
-        if (!produto.trim()) novosErros.produto = 'Produto é obrigatório';
-        if (quantidade <= 0) novosErros.quantidade = 'Quantidade deve ser maior que zero';
-        if (valor <= 0) novosErros.valor = 'Valor deve ser maior que zero';
-        if (!formaPagamento) novosErros.formaPagamento = 'Forma de pagamento é obrigatória';
-        if (!data) novosErros.data = 'Data é obrigatória';
+    if (!produto.trim()) novosErros.produto = 'Produto é obrigatório';
+    if (quantidade <= 0) novosErros.quantidade = 'Quantidade deve ser maior que zero';
+    if (valorNumerico <= 0 || isNaN(valorNumerico)) novosErros.valor = 'Valor deve ser maior que zero';
+    if (!formaPagamento) novosErros.formaPagamento = 'Forma de pagamento é obrigatória';
+    if (!data) novosErros.data = 'Data é obrigatória';
 
-        setErros(novosErros);
-        return Object.keys(novosErros).length === 0;
-    };
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+};
 
     const handleEdit = (row) => {
         let venda = vendas.find(v => v.id === row.id);
@@ -117,37 +122,40 @@ const Vendas = () => {
         setErros({});
     };
 
-    const adicionarVenda = async () => {
-        if (!validarCampos()) return;
+const adicionarVenda = async () => {
+    if (!validarCampos()) return;
 
-        // Garante que usaremos a data selecionada ou a atual
-        const dataParaEnvio = data || new Date().toISOString().split('T')[0];
+    // Garante que usaremos a data selecionada ou a atual
+    const dataParaEnvio = data || new Date().toISOString().split('T')[0];
 
-        // Formata a data no formato que a API espera
-        const dataFormatada = formatarDataParaAPI(dataParaEnvio);
+    // Formata a data no formato que a API espera
+    const dataFormatada = formatarDataParaAPI(dataParaEnvio);
 
-        const vendaData = {
-            nome: produto,
-            quantidade: quantidade,
-            valor: valor.toFixed(2), // Garante 2 casas decimais
-            forma_pagamento: Number(formaPagamento),
-            unidade_id: Number(unidadeId),
-            categoria_id: Number(categoriaSelecionada),
-            data_venda: dataFormatada
-        };
+    // Converte valor para número se não for
+    const valorNumerico = typeof valor === 'string' ? parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) : Number(valor);
 
-        console.log("Dados sendo enviados:", vendaData); // Para debug
-
-        try {
-            const response = await criarVendas(vendaData);
-            console.log("Resposta da API:", response); // Para debug
-
-            limparCampos();
-            buscarVendasDoDia(dataParaEnvio);
-        } catch (error) {
-            console.error("Erro ao adicionar venda:", error);
-        }
+    const vendaData = {
+        nome: produto,
+        quantidade: quantidade,
+        valor: valorNumerico.toFixed(2), // Agora garantido que é número
+        forma_pagamento: Number(formaPagamento),
+        unidade_id: Number(unidadeId),
+        categoria_id: Number(categoriaSelecionada),
+        data_venda: dataFormatada
     };
+
+    console.log("Dados sendo enviados:", vendaData);
+
+    try {
+        const response = await criarVendas(vendaData);
+        console.log("Resposta da API:", response);
+
+        limparCampos();
+        buscarVendasDoDia(dataParaEnvio);
+    } catch (error) {
+        console.error("Erro ao adicionar venda:", error);
+    }
+};
 
     const formatarDataParaAPI = (dataString) => {
         // Se a data já está no formato ISO (vindo do estado)
@@ -397,8 +405,8 @@ const Vendas = () => {
                             label="Valor"
                             value={valor}
                             onValueChange={(values) => {
-                                const { formattedValue, value } = values;
-                                setValor(value);
+                                const { floatValue } = values;
+                                setValor(floatValue || 0); // Garante que seja número
                             }}
                             InputProps={{
                                 startAdornment: (
@@ -528,7 +536,7 @@ const Vendas = () => {
                             {/* Card Dinheiro */}
                             <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Dinheiro} alt="Dinheiro" />
-                                 <div className='flex w-[80%] flex-col gap-2'>
+                                <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Dinheiro</label>
                                     <label className='text-sm font-bold'>
                                         {totais.dinheiro.toLocaleString('pt-BR', {
@@ -556,7 +564,7 @@ const Vendas = () => {
                             {/* Card Crédito */}
                             <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
-                               <div className='flex w-[80%] flex-col gap-2'>
+                                <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
                                     <label className='text-sm font-bold'>
                                         {totais.credito.toLocaleString('pt-BR', {
@@ -570,7 +578,7 @@ const Vendas = () => {
                             {/* Card Total */}
                             <div className='w-[60%] md:w-[17%] justify-center gap-8 flex items-center mr-5' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
                                 <img style={{ width: '30%' }} src={Total} alt="Total" />
-                                 <div className='flex w-[80%] flex-col gap-2'>
+                                <div className='flex w-[80%] flex-col gap-2'>
                                     <label className='text-sm font-bold'>Total</label>
                                     <label className='text-sm font-bold'>
                                         {totais.geral.toLocaleString('pt-BR', {
