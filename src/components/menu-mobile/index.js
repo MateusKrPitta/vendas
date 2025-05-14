@@ -14,6 +14,7 @@ import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices
 import MenuIcon from "@mui/icons-material/Menu";
 import { useUnidade } from "../../contexts";
 import { buscarUnidades } from "../../service/get/unidade";
+import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 
 const MenuMobile = () => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -104,7 +105,7 @@ const MenuMobile = () => {
                     aria-haspopup="true"
                     aria-expanded={open ? 'true' : undefined}
                     onClick={handleClick}
-                    style={{ backgroundColor: '#0d2d43', padding:10, color: 'white', borderRadius: '5px', width: '100%' }}
+                    style={{ backgroundColor: '#0d2d43', padding: 10, color: 'white', borderRadius: '5px', width: '100%' }}
                 >
                     <MenuIcon fontSize='small' />
                 </button>
@@ -123,13 +124,20 @@ const MenuMobile = () => {
                     <DashboardIcon style={{ color: '#0d2d43' }} />Dashboard
                 </MenuItem>
                 {tipoUsuario !== "3" && (
-                    <MenuItem onClick={() => handleNavigate("/vendas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
-                        <AddchartIcon style={{ color: '#0d2d43' }}  />Vendas
-                    </MenuItem>
+                    <>
+                        <MenuItem onClick={() => handleNavigate("/vendas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                            <AddchartIcon style={{ color: '#0d2d43' }} />Vendas
+                        </MenuItem>
+                        <MenuItem onClick={() => handleNavigate("/vendas-diaria")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
+                            <AddBusinessIcon style={{ color: '#0d2d43' }} />Vendas Diárias
+                        </MenuItem>
+                    </>
+
+
                 )}
                 {tipoUsuario !== "3" && (
                     <MenuItem onClick={() => handleNavigate("/saidas")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
-                        <AddToQueueIcon style={{ color: '#0d2d43' }}  />Saídas
+                        <AddToQueueIcon style={{ color: '#0d2d43' }} />Saídas
                     </MenuItem>
                 )}
                 <MenuItem onClick={() => handleNavigate("/relatorio")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
@@ -137,10 +145,10 @@ const MenuMobile = () => {
                 </MenuItem>
 
                 <MenuItem onClick={() => handleNavigate("/cadastro")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
-                    <MiscellaneousServicesIcon style={{ color: '#0d2d43' }}  />Cadastro
+                    <MiscellaneousServicesIcon style={{ color: '#0d2d43' }} />Cadastro
                 </MenuItem>
                 <MenuItem onClick={() => handleNavigate("/")} style={{ color: 'black', gap: '8px', display: 'flex', alignItems: 'center', fontWeight: '600', fontSize: '15px' }}>
-                    <ExitToApp style={{ color: '#0d2d43' }}  />Sair
+                    <ExitToApp style={{ color: '#0d2d43' }} />Sair
                 </MenuItem>
             </Menu>
         </div>

@@ -228,7 +228,7 @@ const RelatorioVendas = () => {
       <div className='flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2'>
         <MenuMobile />
         <motion.div
-
+          style={{ width: '100%' }}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
@@ -340,6 +340,7 @@ const RelatorioVendas = () => {
                                   size="small"
                                   name="produto"
                                   value={filtros.produto}
+                                  sx={{ width: { xs: "50%", sm: "100%", md: "40%", lg: "50%" } }}
                                   onChange={handleFiltroChange}
                                   InputProps={{
                                     startAdornment: (
@@ -356,6 +357,7 @@ const RelatorioVendas = () => {
                                   size="small"
                                   name="categoria"
                                   value={filtros.categoria}
+                                  
                                   onChange={handleFiltroChange}
                                   InputProps={{
                                     startAdornment: (
@@ -412,7 +414,7 @@ const RelatorioVendas = () => {
                                 {(filtros.dataInicio || filtros.dataFim) && (
                                   <IconButton
                                     size="small"
-                                    style={{color:'#0d2d43'}}
+                                    style={{ color: '#0d2d43' }}
                                     onClick={limparFiltrosData}
                                     title="Limpar Filtro"
                                   >

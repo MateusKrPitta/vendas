@@ -20,6 +20,7 @@ import Cursos from '../pages/cursos/index.js';
 import Facebook from '../pages/cursos/facebook/index.js';
 import MercadoLivre from '../pages/cursos/mercado-livre/index.js';
 import WhatsAppCurso from '../pages/cursos/whats-app/index.js';
+import VendasDiaria from '../pages/vendas-diarias/index.js';
 
 const AppRoutes = () => {
     return (
@@ -30,7 +31,7 @@ const AppRoutes = () => {
             <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/vendas" element={<Vendas />} />
-               
+                 <Route path="/vendas-diaria" element={<VendasDiaria />} />
                 <Route path="/cadastro" element={<Cadastro />} />
                 <Route path="/cursos" element={<Cursos />} />
                  <Route path="/cursos/facebook" element={<Facebook />} />

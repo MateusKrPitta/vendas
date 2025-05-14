@@ -5,4 +5,5 @@ export const VendasProdutos = [
   { key: "valor", label: "Valor" },
   { key: "total", label: "Total" },
   { key: "categoria", label: "Categoria" },
+  { key: "data", label: "Data" },
 ];

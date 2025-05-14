@@ -17,22 +17,27 @@ import Credito from '../../assets/icones/credito.png'
 import Total from '../../assets/icones/moedas.png'
 import ModalLateral from '../../components/modal-lateral';
 import DateRangeIcon from '@mui/icons-material/DateRange';
-import { criarVendas } from '../../service/post/vendas';
 import { NumericFormat } from 'react-number-format';
 import { useUnidade } from '../../contexts'
-import { buscarVendas } from '../../service/get/vendas';
 import { atualizarVendas } from '../../service/put/vendas';
 import { deletarVendas } from '../../service/delete/vendas';
 import { buscarCategoria } from '../../service/get/categoria';
 import { motion } from 'framer-motion';
+import AddBusinessIcon from '@mui/icons-material/AddBusiness';
+import { buscarVendasPorUnidade } from '../../service/get/vendas-diaria';
+import { criarVendasDiaria } from '../../service/post/vendas-diaria';
+import CustomToast from '../../components/toast';
 
-const Vendas = () => {
+
+const VendasDiaria = () => {
     const { unidadeId } = useUnidade();
     const [produto, setProduto] = useState('');
     const [vendaEditando, setVendaEditando] = useState(null);
     const [erros, setErros] = useState({});
     const [quantidade, setQuantidade] = useState(0);
     const [valor, setValor] = useState(0);
+    const [dataInicio, setDataInicio] = useState('');
+    const [dataFim, setDataFim] = useState('');
     const [formaPagamento, setFormaPagamento] = useState('');
     const [data, setData] = useState('');
     const [carregandoCategorias, setCarregandoCategorias] = useState(false);
@@ -61,15 +66,34 @@ const Vendas = () => {
             3: 'Cartão de Crédito',
             4: 'Cartão de Débito'
         };
-        return formas[codigo] || codigo;
+        return formas[Number(codigo)] || codigo;
+    };
+
+    const filtrarVendasPorData = () => {
+        if (!dataInicio || !dataFim) {
+            CustomToast({ type: "error", mensage: 'Por favor, selecione ambas as datas (início e fim)' });
+            return;
+        }
+        if (new Date(dataInicio) > new Date(dataFim)) {
+            CustomToast({ type: "error", mensage: 'A data de início não pode ser maior que a data final' });
+            return;
+        }
+        const vendasFiltradas = vendas.filter(venda => {
+            const dataVenda = new Date(venda.data_venda);
+            const inicio = new Date(dataInicio);
+            const fim = new Date(dataFim);
+            // Ajusta o fim para incluir todo o dia
+            fim.setHours(23, 59, 59, 999);
+            // Ajusta o início para incluir o início do dia
+            inicio.setHours(0, 0, 0, 0);
+            console.log(`Comparando: ${dataVenda} >= ${inicio} && ${dataVenda} <= ${fim}`); // Debugging
+            return dataVenda >= inicio && dataVenda <= fim;
+        });
+        return vendasFiltradas;
     };
 
 
-    useEffect(() => {
-        const hoje = new Date().toISOString().split('T')[0];
-        setData(hoje);
-        buscarVendasDoDia(hoje);
-    }, []);
+
 
     const validarCampos = () => {
         const novosErros = {};
@@ -124,16 +148,12 @@ const Vendas = () => {
 
     const adicionarVenda = async () => {
         if (!validarCampos()) return;
-
-        // Garante que usaremos a data selecionada ou a atual
+        // Garante que usaremos a data selecionada
         const dataParaEnvio = data || new Date().toISOString().split('T')[0];
-
         // Formata a data no formato que a API espera
         const dataFormatada = formatarDataParaAPI(dataParaEnvio);
-
         // Converte valor para número se não for
         const valorNumerico = typeof valor === 'string' ? parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) : Number(valor);
-
         const vendaData = {
             nome: produto,
             quantidade: quantidade,
@@ -141,17 +161,12 @@ const Vendas = () => {
             forma_pagamento: Number(formaPagamento),
             unidade_id: Number(unidadeId),
             categoria_id: Number(categoriaSelecionada),
-            data_venda: dataFormatada
+            data_venda: dataFormatada // Aqui você está enviando a data selecionada
         };
-
-        console.log("Dados sendo enviados:", vendaData);
-
         try {
-            const response = await criarVendas(vendaData);
-            console.log("Resposta da API:", response);
-
+            const response = await criarVendasDiaria(vendaData);
             limparCampos();
-            buscarVendasDoDia(dataParaEnvio);
+            await buscarVendasDaUnidade(unidadeId); // Aqui você pode buscar as vendas para a data selecionada
         } catch (error) {
             console.error("Erro ao adicionar venda:", error);
         }
@@ -209,7 +224,7 @@ const Vendas = () => {
 
             setEditando(false);
             setVendaEditando(null);
-            buscarVendasDoDia(data);
+            await buscarVendasDaUnidade(unidadeId);
         } catch (error) {
             console.error("Erro ao atualizar venda:", error);
 
@@ -217,18 +232,14 @@ const Vendas = () => {
     };
 
 
-    const buscarVendasDoDia = async (dataBusca) => {
+    const buscarVendasDaUnidade = async () => {
         setCarregando(true);
         try {
-            // Remove o horário se existir, mantendo apenas a parte da data (YYYY-MM-DD)
-            const dataParaBusca = dataBusca.includes('T')
-                ? dataBusca.split('T')[0]
-                : dataBusca;
-
-            const response = await buscarVendas(dataParaBusca, unidadeId);
-            setVendas(response.data?.vendas || []);
+            const response = await buscarVendasPorUnidade(unidadeId);
+            console.log(`Buscando vendas para unidade_id: ${unidadeId}`);
+            setVendas(response.data || []);
         } catch (error) {
-            console.error("Erro ao buscar vendas:", error);
+            console.error("Erro ao buscar vendas da unidade:", error);
         } finally {
             setCarregando(false);
         }
@@ -244,7 +255,9 @@ const Vendas = () => {
             geral: 0
         };
 
-        vendas.forEach(venda => {
+        const vendasParaCalculo = (dataInicio && dataFim) ? filtrarVendasPorData() : vendas;
+
+        vendasParaCalculo.forEach(venda => {
             if (!venda) return;
 
             const quantidade = parseFloat(venda.quantidade) || 0;
@@ -253,8 +266,10 @@ const Vendas = () => {
 
             totais.geral += totalVenda;
 
+            // Usar formaPagamento ou forma_pagamento dependendo do que vem da API
+            const formaPagamento = venda.formaPagamento || venda.forma_pagamento;
 
-            switch (venda.forma_pagamento) {
+            switch (Number(formaPagamento)) {
                 case 1:
                     totais.dinheiro += totalVenda;
                     break;
@@ -268,45 +283,42 @@ const Vendas = () => {
                     totais.debito += totalVenda;
                     break;
                 default:
-                    console.warn('Forma de pagamento desconhecida:', venda.forma_pagamento);
+                    console.warn('Forma de pagamento desconhecida:', formaPagamento);
             }
         });
 
         return totais;
     };
-    const totais = calcularTotais();
 
-    const dadosTabela = (vendas || []).map(venda => ({
+    const dadosTabela = ((dataInicio && dataFim) ? filtrarVendasPorData() : vendas).map(venda => ({
         id: venda.id,
-        produto: venda.nome || '',
+        produto: venda.nome || venda.produto || '',
         quantidade: venda.quantidade || 0,
         valor: venda.valor ? `R$ ${parseFloat(venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00',
-        formaPagamento: mapearFormaPagamento(venda.forma_pagamento) || '',
+        formaPagamento: mapearFormaPagamento(venda.formaPagamento || venda.forma_pagamento) || '',
         total: venda.quantidade && venda.valor ?
             `R$ ${(venda.quantidade * venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00',
         categoria: venda.categoria?.nome || 'Sem categoria',
-data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') : 'Sem data'
+        data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') : 'Sem data'
     }));
+    const totais = calcularTotais();
 
 
     const handleDelete = async (row) => {
         try {
             await deletarVendas(row.id);
-            buscarVendasDoDia(data);
+            // Atualiza o estado removendo a venda excluída
+            setVendas(prevVendas => prevVendas.filter(venda => venda.id !== row.id));
+
+            // Opcional: Recalcula os totais
+            const novosTotais = calcularTotais();
+            // Se você armazena os totais em um estado, atualize-o aqui
+
         } catch (error) {
             console.error("Erro ao deletar venda:", error);
+            // Mostrar mensagem de erro para o usuário
         }
     };
-
-
-
-    useEffect(() => {
-        if (unidadeId) {
-            const hoje = new Date().toISOString().split('T')[0];
-            setData(hoje);
-            buscarVendasDoDia(hoje);
-        }
-    }, [unidadeId]);
 
     const carregarCategorias = async () => {
         setCarregandoCategorias(true);
@@ -325,6 +337,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
     useEffect(() => {
         if (unidadeId) {
             carregarCategorias();
+            buscarVendasDaUnidade();
         }
     }, [unidadeId]);
 
@@ -344,6 +357,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
         hidden: { opacity: 0 },
         visible: { opacity: 1 },
     };
+
     return (
         <div className="flex w-full ">
             <Navbar />
@@ -358,7 +372,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                 >
                     <HeaderPerfil />
                     <h1 className='justify-center  md:justify-center lg:justify-start items-center md:text-2xl font-bold text-primary w-[99%] flex  gap-2 '>
-                        <AddchartIcon style={{ color: '#0d2d43' }} /> Vendas
+                        <AddBusinessIcon style={{ color: '#0d2d43' }} /> Vendas Diaria
                     </h1>
                     <div className="flex gap-2 flex-wrap items-center w-full mt-6 justify-center md:justify-start p-2 " >
                         <TextField
@@ -376,7 +390,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '57%', sm: '50%', md: '40%', lg: '20%' }, }}
+                            sx={{ width: { xs: '70%', sm: '50%', md: '40%', lg: '20%' }, }}
                         />
 
                         <TextField
@@ -417,7 +431,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '15%' }, }}
+                            sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '15%' }, }}
                             decimalScale={2}
                             fixedDecimalScale={true}
                             thousandSeparator="."
@@ -449,7 +463,7 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                             onChange={(event, newValue) => {
                                 setCategoriaSelecionada(newValue ? newValue.id.toString() : '');
                             }}
-                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '18%' }, }}
+                            sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '18%' }, }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -494,10 +508,9 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '15%' }, }}
+                            sx={{ width: { xs: '45%', sm: '50%', md: '40%', lg: '15%' }, }}
                         />
-
-                        <div className='w-full flex items-end justify-center md:justify-end '>
+                        <div className='flex justify-center items-end md:justify-end w-full'>
                             <ButtonComponent
                                 startIcon={<AddCircleOutline fontSize='small' />}
                                 title={'Adicionar'}
@@ -506,6 +519,61 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
                                 disabled={!camposValidos()}
                                 buttonSize="large"
                             />
+                        </div>
+
+                        <div className='w-full flex items-end justify-center md:justify-end '>
+                            <div className='w-[100%] flex items-center justify-center flex-wrap gap-2 md:justify-start'>
+                                <label className='font-xs w-full font-bold mt-2 md:mt-0 text-center md:text-start'>Filtro</label>
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    type='date'
+                                    size="small"
+                                    label="Data Início"
+                                    value={dataInicio}
+                                    onChange={(e) => setDataInicio(e.target.value)}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <DateRangeIcon fontSize='small' />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    autoComplete="off"
+                                    sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '20%' }, }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    type='date'
+                                    size="small"
+                                    label="Data Final"
+                                    value={dataFim}
+                                    onChange={(e) => setDataFim(e.target.value)}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <DateRangeIcon fontSize='small' />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    autoComplete="off"
+                                    sx={{ width: { xs: '45%', sm: '50%', md: '40%', lg: '20%' }, }}
+                                />
+                                <ButtonComponent
+                                    title={'Limpar Filtros'}
+                                    subtitle={'Limpar'}
+                                    onClick={() => {
+                                        setDataInicio('');
+                                        setDataFim('');
+                                        setCategoriaSelecionada('');
+                                    }}
+                                    buttonSize="large"
+                                />
+
+                            </div>
+
                         </div>
                         <div className='w-full'>
                             <TableComponent
@@ -773,4 +841,4 @@ data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') 
     );
 }
 
-export default Vendas;
+export default VendasDiaria;

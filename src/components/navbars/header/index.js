@@ -13,6 +13,7 @@ import AddchartIcon from '@mui/icons-material/Addchart';
 import AddToQueueIcon from '@mui/icons-material/AddToQueue';
 import DataThresholdingIcon from '@mui/icons-material/DataThresholding';
 import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 
 const Navbar = ({ user }) => {
     const [activeRoute, setActiveRoute] = useState("");
@@ -72,6 +73,15 @@ const Navbar = ({ user }) => {
                         >
                             <AddchartIcon fontSize={"small"} />
                             <span>Vendas</span>
+                        </button>
+
+                         <button
+                            onClick={() => handleNavigate("/vendas-diaria")}
+                            className={`flex items-center bg-white text-primary font-bold rounded p-3 px-2 py-2 gap-2 text-sm ${activeRoute === "/vendas-diaria" ? "border-b-2 border-secundary" : ""}`}
+                            title={'Vendas'}
+                        >
+                            <AddBusinessIcon fontSize={"small"} />
+                            <span>Vendas Diária</span>
                         </button>
 
                         {!isUsuarioTipo3 && (

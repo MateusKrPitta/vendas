@@ -23,7 +23,7 @@ export const login = async (email, password) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response?.data?.message || 'Erro ao fazer login'
+      message: error.response?.data?.message 
     };
   }
 };
