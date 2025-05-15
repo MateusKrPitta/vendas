@@ -412,16 +412,15 @@ const VendasDiaria = () => {
                             sx={{ width: { xs: '25%', sm: '50%', md: '40%', lg: '10%' }, }}
                         />
 
-                        <NumericFormat
-                            customInput={TextField}
+                        <TextField
                             fullWidth
                             variant="outlined"
                             size="small"
                             label="Valor"
                             value={valor}
-                            onValueChange={(values) => {
-                                const { floatValue } = values;
-                                setValor(floatValue || 0); // Garante que seja número
+                            onChange={(e) => {
+                                const floatValue = parseFloat(e.target.value.replace(',', '.')) || 0;
+                                setValor(floatValue);
                             }}
                             InputProps={{
                                 startAdornment: (
@@ -431,12 +430,7 @@ const VendasDiaria = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '15%' }, }}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            prefix="R$ "
+                            sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '15%' } }}
                         />
 
                         <SelectTextFields
@@ -712,15 +706,15 @@ const VendasDiaria = () => {
                             sx={{ width: { xs: '30%', sm: '50%', md: '40%', lg: '47%' }, }}
                         />
 
-                        <NumericFormat
-                            customInput={TextField}
+                        <TextField
                             fullWidth
                             variant="outlined"
                             size="small"
                             label="Valor"
-                            value={vendaEditando?.valor || 0}
-                            onValueChange={(values) => {
-                                setVendaEditando({ ...vendaEditando, valor: values.floatValue || 0 });
+                            value={vendaEditando?.valor || ''}
+                            onChange={(e) => {
+                                const floatValue = parseFloat(e.target.value.replace(',', '.')) || 0;
+                                setVendaEditando({ ...vendaEditando, valor: floatValue });
                             }}
                             InputProps={{
                                 startAdornment: (
@@ -730,13 +724,9 @@ const VendasDiaria = () => {
                                 ),
                             }}
                             autoComplete="off"
-                            sx={{ width: { xs: '45%', sm: '50%', md: '40%', lg: '44%' }, }}
-                            decimalScale={2}
-                            fixedDecimalScale={true}
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            prefix="R$ "
+                            sx={{ width: { xs: '45%', sm: '50%', md: '40%', lg: '44%' } }}
                         />
+
 
                         <SelectTextFields
                             width={'175px'}
