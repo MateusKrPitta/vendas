@@ -72,33 +72,34 @@ const VendasDiaria = () => {
     const filtrarVendasPorData = () => {
         if (!dataInicio || !dataFim) {
             CustomToast({ type: "error", mensage: 'Por favor, selecione ambas as datas (início e fim)' });
-            return;
+            return vendas;
         }
+
         if (new Date(dataInicio) > new Date(dataFim)) {
             CustomToast({ type: "error", mensage: 'A data de início não pode ser maior que a data final' });
-            return;
+            return vendas;
         }
-        const vendasFiltradas = vendas.filter(venda => {
-            const dataVenda = new Date(venda.data_venda);
-            const inicio = new Date(dataInicio);
-            const fim = new Date(dataFim);
-            // Ajusta o fim para incluir todo o dia
-            fim.setHours(23, 59, 59, 999);
-            // Ajusta o início para incluir o início do dia
-            inicio.setHours(0, 0, 0, 0);
-            console.log(`Comparando: ${dataVenda} >= ${inicio} && ${dataVenda} <= ${fim}`); // Debugging
-            return dataVenda >= inicio && dataVenda <= fim;
-        });
-        return vendasFiltradas;
-    };
 
+        const inicioUTC = new Date(dataInicio);
+        inicioUTC.setUTCHours(0, 0, 0, 0);
+
+        const fimUTC = new Date(dataFim);
+        fimUTC.setUTCHours(23, 59, 59, 999);
+
+        return vendas.filter(venda => {
+            if (!venda.data_venda) return false;
+
+            const dataVendaUTC = new Date(venda.data_venda);
+
+            return dataVendaUTC >= inicioUTC && dataVendaUTC <= fimUTC;
+        });
+    };
 
 
 
     const validarCampos = () => {
         const novosErros = {};
 
-        // Converte valor para número para validação
         const valorNumerico = typeof valor === 'string' ?
             parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) :
             Number(valor);
@@ -124,14 +125,12 @@ const VendasDiaria = () => {
         }
 
         if (venda) {
-            console.log("Venda encontrada:", venda);
-            console.log("Categoria da venda:", venda.categoria);
 
             setVendaEditando({
                 ...venda,
                 id: venda.id || venda._id,
-                categoriaObject: venda.categoria || null, // Usa o objeto de categoria que já vem na venda
-                categoria_id: venda.categoria?.id || null // Mantém o ID da categoria também
+                categoriaObject: venda.categoria || null, 
+                categoria_id: venda.categoria?.id || null 
             });
             setEditando(true);
         }
@@ -148,75 +147,73 @@ const VendasDiaria = () => {
 
     const adicionarVenda = async () => {
         if (!validarCampos()) return;
-        // Garante que usaremos a data selecionada
         const dataParaEnvio = data || new Date().toISOString().split('T')[0];
-        // Formata a data no formato que a API espera
         const dataFormatada = formatarDataParaAPI(dataParaEnvio);
-        // Converte valor para número se não for
         const valorNumerico = typeof valor === 'string' ? parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) : Number(valor);
         const vendaData = {
             nome: produto,
             quantidade: quantidade,
-            valor: valorNumerico.toFixed(2), // Agora garantido que é número
+            valor: valorNumerico.toFixed(2), 
             forma_pagamento: Number(formaPagamento),
             unidade_id: Number(unidadeId),
             categoria_id: Number(categoriaSelecionada),
-            data_venda: dataFormatada // Aqui você está enviando a data selecionada
+            data_venda: dataFormatada 
         };
         try {
             const response = await criarVendasDiaria(vendaData);
             limparCampos();
-            await buscarVendasDaUnidade(unidadeId); // Aqui você pode buscar as vendas para a data selecionada
+            await buscarVendasDaUnidade(unidadeId); 
         } catch (error) {
             console.error("Erro ao adicionar venda:", error);
         }
     };
 
     const formatarDataParaAPI = (dataString) => {
-        // Se a data já está no formato ISO (vindo do estado)
         if (dataString.includes('T')) {
             return dataString;
         }
 
-        // Para datas no formato YYYY-MM-DD
         const partes = dataString.split('-');
         if (partes.length === 3) {
-            // Cria a data em UTC meia-noite para evitar problemas de timezone
             const dataUTC = new Date(Date.UTC(
                 parseInt(partes[0]),
                 parseInt(partes[1]) - 1,
                 parseInt(partes[2]),
-                12, 0, 0 // Meio-dia UTC para evitar problemas de timezone
+                0, 0, 0
             ));
             return dataUTC.toISOString();
         }
 
-        return new Date().toISOString();
+        const agoraUTC = new Date();
+        return new Date(Date.UTC(
+            agoraUTC.getFullYear(),
+            agoraUTC.getMonth(),
+            agoraUTC.getDate(),
+            0, 0, 0
+        )).toISOString();
     };
 
     const salvarEdicao = async () => {
         try {
+            const formaPagamento = vendaEditando.forma_pagamento !== undefined
+                ? vendaEditando.forma_pagamento
+                : (vendaEditando.formaPagamento || 1);
 
             let dataISO;
             if (vendaEditando.data_venda) {
-
-                if (vendaEditando.data_venda.includes('T')) {
-                    dataISO = vendaEditando.data_venda;
-                } else {
-
-                    dataISO = new Date(vendaEditando.data_venda).toISOString();
-                }
+                dataISO = vendaEditando.data_venda.includes('T')
+                    ? vendaEditando.data_venda
+                    : new Date(vendaEditando.data_venda).toISOString();
             } else {
-
                 dataISO = new Date().toISOString();
             }
 
             await atualizarVendas(
                 vendaEditando.id,
-                vendaEditando.nome,
+                vendaEditando.nome || vendaEditando.produto,
                 Number(vendaEditando.quantidade),
                 Number(vendaEditando.valor),
-                Number(vendaEditando.forma_pagamento),
+                Number(formaPagamento), 
                 Number(unidadeId),
                 Number(vendaEditando.categoria_id),
                 dataISO
@@ -227,7 +224,7 @@ const VendasDiaria = () => {
             await buscarVendasDaUnidade(unidadeId);
         } catch (error) {
             console.error("Erro ao atualizar venda:", error);
-
+            CustomToast({ type: "error", message: "Erro ao atualizar venda" });
         }
     };
 
@@ -236,7 +233,6 @@ const VendasDiaria = () => {
         setCarregando(true);
         try {
             const response = await buscarVendasPorUnidade(unidadeId);
-            console.log(`Buscando vendas para unidade_id: ${unidadeId}`);
             setVendas(response.data || []);
         } catch (error) {
             console.error("Erro ao buscar vendas da unidade:", error);
@@ -265,8 +261,6 @@ const VendasDiaria = () => {
             const totalVenda = quantidade * valor;
 
             totais.geral += totalVenda;
-
-            // Usar formaPagamento ou forma_pagamento dependendo do que vem da API
             const formaPagamento = venda.formaPagamento || venda.forma_pagamento;
 
             switch (Number(formaPagamento)) {
@@ -289,6 +283,11 @@ const VendasDiaria = () => {
 
         return totais;
     };
+    const formatarDataParaExibicao = (dataString) => {
+        const dataObj = new Date(dataString);
+        const dataLocal = new Date(dataObj.getTime() + dataObj.getTimezoneOffset() * 60000);
+        return dataLocal.toLocaleDateString('pt-BR');
+    };
 
     const dadosTabela = ((dataInicio && dataFim) ? filtrarVendasPorData() : vendas).map(venda => ({
         id: venda.id,
@@ -299,24 +298,23 @@ const VendasDiaria = () => {
         total: venda.quantidade && venda.valor ?
             `R$ ${(venda.quantidade * venda.valor).toFixed(2).replace('.', ',')}` : 'R$ 0,00',
         categoria: venda.categoria?.nome || 'Sem categoria',
-        data: venda.data_venda ? new Date(venda.data_venda).toLocaleDateString('pt-BR') : 'Sem data'
+        data: venda.data_venda ? formatarDataParaExibicao(venda.data_venda) : 'Sem data'
     }));
+
+
+
     const totais = calcularTotais();
 
 
     const handleDelete = async (row) => {
         try {
             await deletarVendas(row.id);
-            // Atualiza o estado removendo a venda excluída
             setVendas(prevVendas => prevVendas.filter(venda => venda.id !== row.id));
 
-            // Opcional: Recalcula os totais
             const novosTotais = calcularTotais();
-            // Se você armazena os totais em um estado, atualize-o aqui
 
         } catch (error) {
             console.error("Erro ao deletar venda:", error);
-            // Mostrar mensagem de erro para o usuário
         }
     };
 
@@ -735,11 +733,11 @@ const VendasDiaria = () => {
                             backgroundColor={"#D9D9D9"}
                             name={"forma de pagamento"}
                             fontWeight={500}
-                            value={vendaEditando?.formaPagamento || vendaEditando?.forma_pagamento || ''}
+                            value={vendaEditando?.forma_pagamento?.toString() || vendaEditando?.formaPagamento?.toString() || ''}
                             onChange={(e) => setVendaEditando({
                                 ...vendaEditando,
-                                formaPagamento: Number(e.target.value),
-                                forma_pagamento: Number(e.target.value)
+                                forma_pagamento: Number(e.target.value),
+                                formaPagamento: Number(e.target.value)
                             })}
                             options={[
                                 { value: '1', label: 'Dinheiro' },
@@ -754,7 +752,6 @@ const VendasDiaria = () => {
                             getOptionLabel={(option) => option.nome}
                             value={vendaEditando?.categoriaObject || null}
                             onChange={(event, newValue) => {
-                                console.log("Nova categoria selecionada:", newValue);
                                 setVendaEditando({
                                     ...vendaEditando,
                                     categoria_id: newValue ? Number(newValue.id) : null,
@@ -784,7 +781,6 @@ const VendasDiaria = () => {
                             noOptionsText="Nenhuma categoria encontrada"
                             disabled={carregandoCategorias}
                             isOptionEqualToValue={(option, value) => {
-                                console.log("Comparando opções:", option, value);
                                 return option.id === value.id;
                             }}
                         />

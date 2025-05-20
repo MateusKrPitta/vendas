@@ -74,7 +74,6 @@ const Vendas = () => {
     const validarCampos = () => {
         const novosErros = {};
 
-        // Converte valor para número para validação
         const valorNumerico = typeof valor === 'string' ?
             parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) :
             Number(valor);
@@ -100,14 +99,12 @@ const Vendas = () => {
         }
 
         if (venda) {
-            console.log("Venda encontrada:", venda);
-            console.log("Categoria da venda:", venda.categoria);
 
             setVendaEditando({
                 ...venda,
                 id: venda.id || venda._id,
-                categoriaObject: venda.categoria || null, // Usa o objeto de categoria que já vem na venda
-                categoria_id: venda.categoria?.id || null // Mantém o ID da categoria também
+                categoriaObject: venda.categoria || null, 
+                categoria_id: venda.categoria?.id || null
             });
             setEditando(true);
         }
@@ -125,30 +122,25 @@ const Vendas = () => {
     const adicionarVenda = async () => {
         if (!validarCampos()) return;
 
-        // Garante que usaremos a data selecionada ou a atual
         const dataParaEnvio = data || new Date().toISOString().split('T')[0];
 
-        // Formata a data no formato que a API espera
         const dataFormatada = formatarDataParaAPI(dataParaEnvio);
 
-        // Converte valor para número se não for
         const valorNumerico = typeof valor === 'string' ? parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) : Number(valor);
 
         const vendaData = {
             nome: produto,
             quantidade: quantidade,
-            valor: valorNumerico.toFixed(2), // Agora garantido que é número
+            valor: valorNumerico.toFixed(2), 
             forma_pagamento: Number(formaPagamento),
             unidade_id: Number(unidadeId),
             categoria_id: Number(categoriaSelecionada),
             data_venda: dataFormatada
         };
 
-        console.log("Dados sendo enviados:", vendaData);
 
         try {
             const response = await criarVendas(vendaData);
-            console.log("Resposta da API:", response);
 
             limparCampos();
             buscarVendasDoDia(dataParaEnvio);
@@ -158,20 +150,17 @@ const Vendas = () => {
     };
 
     const formatarDataParaAPI = (dataString) => {
-        // Se a data já está no formato ISO (vindo do estado)
         if (dataString.includes('T')) {
             return dataString;
         }
 
-        // Para datas no formato YYYY-MM-DD
         const partes = dataString.split('-');
         if (partes.length === 3) {
-            // Cria a data em UTC meia-noite para evitar problemas de timezone
             const dataUTC = new Date(Date.UTC(
                 parseInt(partes[0]),
                 parseInt(partes[1]) - 1,
                 parseInt(partes[2]),
-                12, 0, 0 // Meio-dia UTC para evitar problemas de timezone
+                12, 0, 0 
             ));
             return dataUTC.toISOString();
         }
@@ -220,7 +209,6 @@ const Vendas = () => {
     const buscarVendasDoDia = async (dataBusca) => {
         setCarregando(true);
         try {
-            // Remove o horário se existir, mantendo apenas a parte da data (YYYY-MM-DD)
             const dataParaBusca = dataBusca.includes('T')
                 ? dataBusca.split('T')[0]
                 : dataBusca;
@@ -687,7 +675,6 @@ const Vendas = () => {
                             getOptionLabel={(option) => option.nome}
                             value={vendaEditando?.categoriaObject || null}
                             onChange={(event, newValue) => {
-                                console.log("Nova categoria selecionada:", newValue);
                                 setVendaEditando({
                                     ...vendaEditando,
                                     categoria_id: newValue ? Number(newValue.id) : null,
@@ -717,7 +704,6 @@ const Vendas = () => {
                             noOptionsText="Nenhuma categoria encontrada"
                             disabled={carregandoCategorias}
                             isOptionEqualToValue={(option, value) => {
-                                console.log("Comparando opções:", option, value);
                                 return option.id === value.id;
                             }}
                         />

@@ -331,17 +331,19 @@ const RelatorioVendas = () => {
                             </div>
                           }
                           informacoes={
-                            <div className="p-4 bg-white">
+                            <div className="p-4 w-full bg-white">
                               {/* Filtros */}
-                              <div className="flex gap-4 mb-4 flex-wrap">
+                              <div className="flex w-full flex-col md:flex-row md:flex-wrap gap-4 mb-4">
+                                {/* Filtro por produto */}
+                                <div className='flex gap-2 items-center w-full'>
                                 <TextField
                                   label="Filtrar por produto"
                                   variant="outlined"
                                   size="small"
                                   name="produto"
                                   value={filtros.produto}
-                                  sx={{ width: { xs: "50%", sm: "100%", md: "40%", lg: "50%" } }}
                                   onChange={handleFiltroChange}
+                                  sx={{ width: { xs: '50%', sm: '50%', md: '40%', lg: '50%' } }}
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
@@ -351,14 +353,15 @@ const RelatorioVendas = () => {
                                   }}
                                 />
 
+                                {/* Filtro por categoria */}
                                 <TextField
                                   label="Filtrar por categoria"
                                   variant="outlined"
                                   size="small"
                                   name="categoria"
                                   value={filtros.categoria}
-                                  
                                   onChange={handleFiltroChange}
+                                  sx={{ width: { xs: '40%', sm: '50%', md: '40%', lg: '40%' } }}
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
@@ -367,49 +370,52 @@ const RelatorioVendas = () => {
                                     ),
                                   }}
                                 />
+</div>
+                                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                                  <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="pt-br">
+                                    <DatePicker
+                                      label="Data Início"
+                                      value={filtros.dataInicio}
+                                      onChange={(date) => handleDateChange('dataInicio', date)}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          size="small"
+                                          className="w-full sm:w-[50%]"
+                                          InputProps={{
+                                            ...params.InputProps,
+                                            startAdornment: (
+                                              <InputAdornment position="start">
+                                                <DateRangeIcon />
+                                              </InputAdornment>
+                                            ),
+                                          }}
+                                        />
+                                      )}
+                                    />
 
-                                <div className='flex items-center gap-2 w-[50%]'> <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="pt-br">
-                                  <DatePicker
-                                    label="Data Início"
-                                    value={filtros.dataInicio}
-                                    onChange={(date) => handleDateChange('dataInicio', date)}
-                                    renderInput={(params) => (
-                                      <TextField
-                                        {...params}
-                                        size="small"
-                                        InputProps={{
-                                          ...params.InputProps,
-                                          startAdornment: (
-                                            <InputAdornment position="start">
-                                              <DateRangeIcon />
-                                            </InputAdornment>
-                                          ),
-                                        }}
-                                      />
-                                    )}
-                                  />
-
-                                  <DatePicker
-                                    label="Data Fim"
-                                    value={filtros.dataFim}
-                                    onChange={(date) => handleDateChange('dataFim', date)}
-                                    minDate={filtros.dataInicio}
-                                    renderInput={(params) => (
-                                      <TextField
-                                        {...params}
-                                        size="small"
-                                        InputProps={{
-                                          ...params.InputProps,
-                                          startAdornment: (
-                                            <InputAdornment position="start">
-                                              <DateRangeIcon />
-                                            </InputAdornment>
-                                          ),
-                                        }}
-                                      />
-                                    )}
-                                  />
-                                </LocalizationProvider></div>
+                                    <DatePicker
+                                      label="Data Fim"
+                                      value={filtros.dataFim}
+                                      onChange={(date) => handleDateChange('dataFim', date)}
+                                      minDate={filtros.dataInicio}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          size="small"
+                                          className="w-full sm:w-[50%]"
+                                          InputProps={{
+                                            ...params.InputProps,
+                                            startAdornment: (
+                                              <InputAdornment position="start">
+                                                <DateRangeIcon />
+                                              </InputAdornment>
+                                            ),
+                                          }}
+                                        />
+                                      )}
+                                    />
+                                  </LocalizationProvider></div>
 
                                 {(filtros.dataInicio || filtros.dataFim) && (
                                   <IconButton

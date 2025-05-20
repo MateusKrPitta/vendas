@@ -24,6 +24,7 @@ import { useUnidade } from '../../contexts';
 import { deletarSaidas } from '../../service/delete/saidas';
 import { atualizarSaidas } from '../../service/put/saidas';
 import { motion } from 'framer-motion';
+import CustomToast from '../../components/toast';
 
 const Saidas = () => {
     const { unidadeId } = useUnidade();
@@ -44,6 +45,11 @@ const Saidas = () => {
         forma_pagamento: '',
         unidade_id: unidadeId,
     });
+
+    const camposPreenchidos =
+        formularioPrincipal.descricao.trim() !== '' &&
+        formularioPrincipal.valor !== '' &&
+        formularioPrincipal.forma_pagamento !== '';
 
     const mapearFormaPagamento = (codigo) => {
         const formas = {
@@ -126,7 +132,7 @@ const Saidas = () => {
                 formularioEdicao.descricao,
                 Number(formularioEdicao.valor),
                 Number(formularioEdicao.forma_pagamento),
-                unidadeId 
+                unidadeId
             );
 
             await buscaSaidas();
@@ -173,11 +179,15 @@ const Saidas = () => {
     };
 
     const handleDelete = async (id) => {
+
+
         try {
             await deletarSaidas(id);
             await buscaSaidas();
+            CustomToast({ type: "success", message: "Saída excluída com sucesso" });
         } catch (error) {
             console.error("Erro ao deletar saída:", error);
+            CustomToast({ type: "error", message: "Erro ao excluir saída" });
         }
     };
 
@@ -280,6 +290,11 @@ const Saidas = () => {
                             subtitle={'Adicionar'}
                             startIcon={<AddCircleOutline />}
                             onClick={handleSave}
+                            disabled={!camposPreenchidos}
+                            style={{
+                                opacity: camposPreenchidos ? 1 : 0.6,
+                                cursor: camposPreenchidos ? 'pointer' : 'not-allowed'
+                            }}
                         />
 
                         {/* Tabela de saídas */}
@@ -341,7 +356,7 @@ const Saidas = () => {
 
                             {/* Card Crédito */}
                             <div className='w-[45%] md:w-[17%] justify-center gap-8 flex items-center' style={{ border: '1px solid #0D2E43', borderRadius: '10px', padding: "10px" }}>
-                                <img style={{ width: '30%' }}  src={Credito} alt="Crédito" />
+                                <img style={{ width: '30%' }} src={Credito} alt="Crédito" />
                                 <div className='flex flex-col w-[70%] gap-2'>
                                     <label className='text-sm font-bold'>Crédito</label>
                                     <label className='text-sm font-bold'>
