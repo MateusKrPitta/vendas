@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const API_URL = `https://api-vendas-sistema.up.railway.app/`;
+const API = `https://api-vendas-sistema.up.railway.app/`;
 
 const httpsInstance = () => {
   const httpsAuthenticated = axios.create({
-    baseURL: API_URL,
+    baseURL: API,
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
