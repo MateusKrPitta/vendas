@@ -32,6 +32,11 @@ const Saidas = () => {
     const [editando, setEditando] = useState(false);
     const [saidas, setSaidas] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filtroData, setFiltroData] = useState({
+        inicio: '',
+        fim: ''
+    });
+    
     const [formularioPrincipal, setFormularioPrincipal] = useState({
         descricao: '',
         valor: '',
@@ -61,6 +66,21 @@ const Saidas = () => {
         return formas[codigo] || codigo;
     };
 
+    const filtrarPorData = (saidas, dataInicio, dataFim) => {
+        if (!dataInicio && !dataFim) return saidas;
+        
+        const inicio = dataInicio ? new Date(dataInicio) : null;
+        const fim = dataFim ? new Date(dataFim) : null;
+        
+        return saidas.filter(saida => {
+            const dataSaida = new Date(saida.data_registro);
+            
+            const depoisInicio = !inicio || dataSaida >= inicio;
+            const antesFim = !fim || dataSaida <= fim;
+            
+            return depoisInicio && antesFim;
+        });
+    };
 
     const buscaSaidas = async () => {
         try {
@@ -75,8 +95,15 @@ const Saidas = () => {
 
             const todasSaidas = response.flatMap(item => item.saidas || []);
             const saidasDaUnidade = todasSaidas.filter(saida => saida.unidade_id == unidadeId);
+            
+            // Aplicar filtro de data
+            const saidasFiltradas = filtrarPorData(
+                saidasDaUnidade, 
+                filtroData.inicio, 
+                filtroData.fim
+            );
 
-            const transformedData = saidasDaUnidade.map(saida => ({
+            const transformedData = saidasFiltradas.map(saida => ({
                 id: saida.id,
                 descricao: saida.descricao,
                 valor: new Intl.NumberFormat('pt-BR', {
@@ -87,7 +114,8 @@ const Saidas = () => {
                 data: saida.data_registro ? new Date(saida.data_registro).toLocaleDateString('pt-BR') : '-',
                 valorOriginal: saida.valor,
                 formaPagamentoOriginal: saida.forma_pagamento,
-                unidadeId: saida.unidade_id
+                unidadeId: saida.unidade_id,
+                data_registro: saida.data_registro
             }));
 
             setSaidas(transformedData);
@@ -100,8 +128,6 @@ const Saidas = () => {
 
     const handleSave = async () => {
         try {
-
-
             const valorNumerico = Number(formularioPrincipal.valor) || 0;
 
             await criarSaidas({
@@ -109,7 +135,6 @@ const Saidas = () => {
                 valor: valorNumerico,
                 unidade_id: unidadeId
             });
-
 
             setFormularioPrincipal({
                 descricao: '',
@@ -126,7 +151,6 @@ const Saidas = () => {
 
     const handleAtualizar = async () => {
         try {
-
             await atualizarSaidas(
                 saidaEditando.id,
                 formularioEdicao.descricao,
@@ -139,6 +163,7 @@ const Saidas = () => {
             setEditando(false);
             setSaidaEditando(null);
         } catch (error) {
+            console.error("Erro ao atualizar saída:", error);
         }
     };
 
@@ -197,7 +222,7 @@ const Saidas = () => {
         if (unidadeId) {
             buscaSaidas();
         }
-    }, [unidadeId]);
+    }, [unidadeId, filtroData]);
 
     const fadeIn = {
         hidden: { opacity: 0 },
@@ -221,8 +246,52 @@ const Saidas = () => {
                         <AddchartIcon style={{ color: '#0d2d43' }} /> Saídas
                     </h1>
 
+                    {/* Filtro por data */}
+                    <div className="flex gap-2 flex-wrap items-center w-full mt-2 justify-center md:justify-start p-2">
+                        <TextField
+                            label="Data Início"
+                            type="date"
+                            size="small"
+                            value={filtroData.inicio}
+                            onChange={(e) => setFiltroData({...filtroData, inicio: e.target.value})}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            sx={{ width: { xs: '45%', sm: '30%', md: '20%', lg: '15%' } }}
+                        />
+                        
+                        <TextField
+                            label="Data Fim"
+                            type="date"
+                            size="small"
+                            value={filtroData.fim}
+                            onChange={(e) => setFiltroData({...filtroData, fim: e.target.value})}
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            sx={{ width: { xs: '45%', sm: '30%', md: '20%', lg: '15%' } }}
+                        />
+                        
+                        <ButtonComponent
+                            title={'Filtrar'}
+                            subtitle={'Filtrar'}
+                            onClick={buscaSaidas}
+                            sx={{ height: '40px' }}
+                        />
+                        
+                        <ButtonComponent
+                            title={'Limpar'}
+                            subtitle={'Limpar'}
+                            onClick={() => {
+                                setFiltroData({ inicio: '', fim: '' });
+                                buscaSaidas();
+                            }}
+                            sx={{ height: '40px' }}
+                        />
+                    </div>
+
                     {/* Formulário principal */}
-                    <div className="flex gap-2 flex-wrap items-center w-full mt-6 justify-center md:justify-start p-2">
+                    <div className="flex gap-2 flex-wrap items-center w-full mt-2 justify-center md:justify-start p-2">
                         <TextField
                             fullWidth
                             variant="outlined"
