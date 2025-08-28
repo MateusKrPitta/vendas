@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = `https://api-vendas-sistema.up.railway.app/`;
+const API = `api-vendas-production.up.railway.app`;
 
 const httpsInstance = () => {
   const httpsAuthenticated = axios.create({
