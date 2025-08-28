@@ -1,23 +1,23 @@
 import axios from "axios";
 
-const API = `api-vendas-production.up.railway.app`;
+const API_URL = process.env.REACT_APP_BASE_API;
 
 const httpsInstance = () => {
   const httpsAuthenticated = axios.create({
-    baseURL: API,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
+    baseURL: API_URL,
   });
 
   httpsAuthenticated.interceptors.request.use(
     (config) => {
       const storedUser = sessionStorage.getItem("user");
       if (storedUser) {
-        const { token } = JSON.parse(storedUser);
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+        try {
+          const { token } = JSON.parse(storedUser);
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
         }
       }
       return config;
