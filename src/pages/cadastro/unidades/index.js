@@ -8,7 +8,7 @@ import CentralModal from "../../../components/modal-central";
 import ModalLateral from "../../../components/modal-lateral";
 import MenuMobile from "../../../components/menu-mobile";
 import { useNavigate } from "react-router-dom";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import { InputAdornment, TextField } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
@@ -23,11 +23,10 @@ import { reativaUnidade } from "../../../service/reativa/unidade";
 import TableLoading from "../../../components/loading/loading-table/loading";
 
 const Unidades = () => {
-
   const navigate = useNavigate();
   const [filtroNome, setFiltroNome] = useState("");
   const [nomeUnidade, setNomeUnidade] = useState("");
-  const [mensagemErro, setMensagemErro] = useState('');
+  const [mensagemErro, setMensagemErro] = useState("");
 
   const [unidades, setUnidades] = useState([]);
   const [cadastradasNovas, setCadastrarUnidadeNovas] = useState([]);
@@ -54,7 +53,6 @@ const Unidades = () => {
     setCadastrarUnidade(false);
   };
 
-
   const Editar = (unidade) => {
     setUnidadeEditando(unidade);
     setUnidadeEditada({ nome: unidade.nome });
@@ -62,7 +60,7 @@ const Unidades = () => {
   };
 
   const Cadastrar = async () => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     const token = userData ? JSON.parse(userData).token : null;
     try {
       setLoading(true);
@@ -73,13 +71,13 @@ const Unidades = () => {
         return;
       }
 
-      const userData = localStorage.getItem('user');
+      const userData = localStorage.getItem("user");
       const token = userData ? JSON.parse(userData).token : null;
 
       if (!token) {
         setMensagemErro("Sessão expirada. Por favor, faça login novamente.");
         setIsVisible(true);
-        navigate('/');
+        navigate("/");
         return;
       }
 
@@ -95,7 +93,7 @@ const Unidades = () => {
     } catch (error) {
       console.error("Erro ao cadastrar unidade:", error);
       if (error.message === "Autenticação necessária") {
-        navigate('/');
+        navigate("/");
       } else {
         setMensagemErro(error.message || "Erro ao cadastrar unidade");
         setIsVisible(true);
@@ -105,23 +103,20 @@ const Unidades = () => {
     }
   };
 
-
   const buscarUnidadesCadastradas = async () => {
     try {
       setLoading(true);
       const response = await buscarUnidades();
 
-
       if (Array.isArray(response)) {
-
-        const unidadesFormatadas = response.map(u => ({
+        const unidadesFormatadas = response.map((u) => ({
           ...u,
-          ativo: Boolean(u.ativo)
+          ativo: Boolean(u.ativo),
         }));
         setUnidades(unidadesFormatadas);
       }
     } catch (error) {
-      console.error('Erro ao buscar unidades:', error);
+      console.error("Erro ao buscar unidades:", error);
       setMensagemErro(error.message || "Erro ao buscar unidades");
       setIsVisible(true);
     } finally {
@@ -132,7 +127,10 @@ const Unidades = () => {
   const SalvarEdicao = async () => {
     if (!unidadeEditando) return;
     try {
-      const updatedUnit = await atualizarUnidade(unidadeEditada.nome, unidadeEditando.id);
+      const updatedUnit = await atualizarUnidade(
+        unidadeEditada.nome,
+        unidadeEditando.id
+      );
       setUnidades((prevUnidades) =>
         prevUnidades.map((unidade) =>
           unidade.id === updatedUnit.id ? updatedUnit : unidade
@@ -144,22 +142,21 @@ const Unidades = () => {
     }
   };
 
-  const unidadesFiltradas = unidades.filter(unidade =>
-    unidade.nome && unidade.nome.toLowerCase().includes(filtroNome.toLowerCase())
+  const unidadesFiltradas = unidades.filter(
+    (unidade) =>
+      unidade.nome &&
+      unidade.nome.toLowerCase().includes(filtroNome.toLowerCase())
   );
 
   const handleInactivateUnidade = async (row) => {
     if (row.ativo === "Ativo" || row.ativo === true) {
-
       await inativarUnidade(row.id);
     } else {
-
       await reativaUnidade(row.id);
     }
 
     await buscarUnidadesCadastradas();
   };
-
 
   useEffect(() => {
     buscarUnidadesCadastradas();
@@ -167,17 +164,17 @@ const Unidades = () => {
   return (
     <div className="flex w-full ">
       <Navbar />
-      <div className='flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2'>
+      <div className="flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2">
         <MenuMobile />
         <motion.div
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
           transition={{ duration: 0.9 }}
         >
           <HeaderPerfil />
-          <h1 className='justify-center  md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex  gap-2 '>
+          <h1 className="justify-center  md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex  gap-2 ">
             <LocationOnOutlined />
             Unidade
           </h1>
@@ -214,9 +211,12 @@ const Unidades = () => {
                 />
               </div>
 
-              <div className='w-full'>
+              <div className="w-full">
                 {loading ? (
-                  <TableLoading />
+                  <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
+                    <TableLoading />
+                    <label className="text-sm">Carregando Informações!</label>
+                  </div>
                 ) : unidadesFiltradas.length > 0 ? (
                   <TableComponent
                     headers={unidadeLocal}
@@ -230,7 +230,8 @@ const Unidades = () => {
                 ) : (
                   <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
                     <TableLoading />
-                    <label className="text-sm">Unidade não encontrada!</label></div>
+                    <label className="text-sm">Unidade não encontrada!</label>
+                  </div>
                 )}
               </div>
 
@@ -256,7 +257,9 @@ const Unidades = () => {
                       autoComplete="off"
                       value={nomeUnidade}
                       onChange={(e) => setNomeUnidade(e.target.value)}
-                      sx={{ width: { xs: "95%", sm: "100%", md: "40%", lg: "95%" } }}
+                      sx={{
+                        width: { xs: "95%", sm: "100%", md: "40%", lg: "95%" },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -271,15 +274,14 @@ const Unidades = () => {
                         startIcon={<AddCircleOutlineIcon fontSize="small" />}
                         title={"Cadastrar"}
                         subtitle={"Cadastrar"}
+                        disabled={!nomeUnidade.trim()}
                         onClick={Cadastrar}
-                        disabled={loading}
                         buttonSize="large"
                       />
                     </div>
                   </div>
                 </div>
               </CentralModal>
-
 
               <ModalLateral
                 open={editando}
@@ -298,7 +300,10 @@ const Unidades = () => {
                         autoComplete="off"
                         value={unidadeEditada ? unidadeEditada.nome : ""}
                         onChange={(e) =>
-                          setUnidadeEditada({ ...unidadeEditada, nome: e.target.value })
+                          setUnidadeEditada({
+                            ...unidadeEditada,
+                            nome: e.target.value,
+                          })
                         }
                         sx={{ width: "100%" }}
                         InputProps={{

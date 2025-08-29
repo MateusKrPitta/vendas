@@ -1,130 +1,200 @@
-import React, { useState } from 'react';
-import { VisibilityOffOutlined, VisibilityOutlined } from '@mui/icons-material';
-import Financeiro from '../../assets/icones/logo.png';
-import LoadingLogin from '../../components/loading/loading-login';
-import { useNavigate } from 'react-router-dom';
-import packageJson from '../../../package.json';
-import CustomToast from '../../components/toast';
-import { login } from '../../service/post/login';
+import React, { useState } from "react";
+import {
+  Mail,
+  Password,
+  VisibilityOffOutlined,
+  VisibilityOutlined,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+  Paper,
+} from "@mui/material";
+import Financeiro from "../../assets/png/logo.png";
+import { useNavigate } from "react-router-dom";
+import packageJson from "../../../package.json";
+import CustomToast from "../../components/toast";
+import { login } from "../../service/post/login";
 
 const LoginPage = () => {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState('');
-    const [senha, setSenha] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [carregando, setCarregando] = useState(false);
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-    };
+  const handleLogin = async () => {
+    if (!email || !senha) {
+      CustomToast({
+        type: "error",
+        message: "Por favor, preencha todos os campos",
+      });
+      return;
+    }
 
-    const handleSenhaChange = (e) => {
-        setSenha(e.target.value);
-    };
+    setLoading(true);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
+    try {
+      const response = await login(email, senha);
 
-    const handleLogin = async () => {
-        if (!email || !senha) {
-            CustomToast({ type: "error", message: 'Por favor, preencha todos os campos' });
-            return;
-        }
+      if (response.status) {
+        const { token, user } = response.data;
 
-        setLoading(true);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            token: token.token,
+            fullName: user.fullName,
+            tipo: user.tipo,
+            unidades: user.unidades,
+          })
+        );
 
-        try {
-            const response = await login(email, senha);
+        CustomToast({
+          type: "success",
+          message: "Seja bem vindo!",
+        });
 
-            if (response.status) {
-                const { token, user } = response.data;
+        navigate("/dashboard", { replace: true });
+      } else {
+        CustomToast({
+          type: "error",
+          message: response.message || "Erro no login",
+        });
+      }
+    } catch (error) {
+      console.error("Erro no login:", error);
+      CustomToast({
+        type: "error",
+        message:
+          error.response?.data?.message || "Erro ao conectar com o servidor",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                localStorage.setItem('user', JSON.stringify({
-                    token: token.token,
-                    fullName: user.fullName,
-                    tipo: user.tipo,
-                    unidades: user.unidades 
-                }));
-        
+  return (
+    <Box
+      className="login-container"
+      sx={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(270deg, #0d2d43, #133b5c, #0d2d43)",
+        backgroundSize: "600% 600%",
+        animation: "gradient 15s ease infinite",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          borderRadius: 3,
+          width: "100%",
+          maxWidth: 400,
+          display: "flex",
+          gap: "10px",
+          flexDirection: "column",
+          bgcolor: "white",
+          textAlign: "center",
+        }}
+      >
+        {/* Logo */}
+        <Box
+          sx={{
+            mb: 3,
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src={Financeiro}
+            alt="Logo"
+            style={{ width: "120px", borderRadius: "8px" }}
+          />
+        </Box>
 
-                CustomToast({
-                    type: "success",
-                    message: 'Seja bem vindo!'
-                });
+        {/* Campo de email */}
+        <TextField
+          fullWidth
+          label="E-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          size="small"
+          variant="outlined"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Mail fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-                navigate('/dashboard', { replace: true });
-
-            } else {
-                CustomToast({
-                    type: "error",
-                    message: response.message || 'Erro no login'
-                });
-            }
-        } catch (error) {
-            console.error('Erro no login:', error);
-            CustomToast({
-                type: "error",
-                message: error.response?.data?.message || 'Erro ao conectar com o servidor'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleLogin();
-        }
-    };
-
-    return (
-        <div className="login-container flex h-screen items-center justify-center ">
-            <div className="relative p-8 rounded-lg shadow-lg max-w-md w-full z-10" style={{ backgroundColor: '#0d2d43' }}>
-                <div className="flex justify-center mb-10" >
-                    <img src={Financeiro} alt="Logo Pax Verde" className="w-22" style={{ borderRadius: "10px" }} />
-                </div>
-                <input
-                    type="text"
-                    value={email}
-                    onChange={handleEmailChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Email"
-                    autoComplete='off'
-                    className="cpf-input w-full p-3 mb-4 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-                <div className="relative w-full mb-4">
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={senha}
-                        onChange={handleSenhaChange}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Senha"
-                        className="password-input w-full p-3 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                    <div
-                        className="absolute inset-y-0 right-3 flex items-center cursor-pointer opacity-25"
-                        onClick={togglePasswordVisibility}
-                    >
-                        {showPassword ? <VisibilityOffOutlined size={24} /> : <VisibilityOutlined size={24} />}
-                    </div>
-                </div>
-                <button
-                    onClick={handleLogin}
-                    disabled={loading}
-                    style={{ backgroundColor: '#588152', color: 'white', fontWeight: '600' }}
-                    className="login-button w-full text-white p-2 rounded-md bg-custom-green"
+        {/* Campo de senha */}
+        <TextField
+          fullWidth
+          label="Senha"
+          type={showPassword ? "text" : "password"}
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          size="small"
+          variant="outlined"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
                 >
-                    {loading ? <LoadingLogin /> : 'Entrar'}
-                </button>
-                <div className="versao-app text-center text-white mt-10">
-                    <p> Versão {packageJson.version}</p>
-                </div>
-            </div>
-        </div>
-    );
+                  {showPassword ? (
+                    <VisibilityOffOutlined sx={{ color: "#0d2d43" }} />
+                  ) : (
+                    <VisibilityOutlined sx={{ color: "#0d2d43" }} />
+                  )}
+                </IconButton>
+              </InputAdornment>
+            ),
+            startAdornment: (
+              <InputAdornment position="start">
+                <Password fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+        {/* Botão entrar */}
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleLogin}
+          disabled={loading}
+          sx={{
+            py: 1.5,
+            mb: 2,
+            backgroundColor: "#588152",
+            fontWeight: "600",
+            "&:hover": { backgroundColor: "#476a41" },
+          }}
+        >
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Entrar"}
+        </Button>
+
+        <label className="text-xs text-primary mt-4 font-bold">
+          Versão {packageJson.version}
+        </label>
+      </Paper>
+    </Box>
+  );
 };
 
 export default LoginPage;

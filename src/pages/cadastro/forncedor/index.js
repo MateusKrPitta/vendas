@@ -7,14 +7,14 @@ import TableComponent from "../../../components/table";
 import CentralModal from "../../../components/modal-central";
 import ModalLateral from "../../../components/modal-lateral";
 import MenuMobile from "../../../components/menu-mobile";
-import CategoryIcon from '@mui/icons-material/Category';
+import CategoryIcon from "@mui/icons-material/Category";
 import { InputAdornment, TextField } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import { LocationOnOutlined, Phone, Save } from "@mui/icons-material";
 import { fornecedores } from "../../../entities/headers/fornecedores";
 import { criarFornecedor } from "../../../service/post/fornecedor";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import { buscarFornecedor } from "../../../service/get/fornecedor";
 import { atualizarFornecedor } from "../../../service/put/forncedor";
 import { TelefoneInput } from "../../../utils/mascaras/telefone";
@@ -31,7 +31,7 @@ const Fornecedor = () => {
   const [telefoneFornecedor, setTelefoneFornecedor] = useState("");
   const [unidadeEditando, setUnidadeEditando] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [mensagemErro, setMensagemErro] = useState('');
+  const [mensagemErro, setMensagemErro] = useState("");
 
   const buscaFornecedores = async () => {
     try {
@@ -81,7 +81,11 @@ const Fornecedor = () => {
     try {
       setLoading(true);
 
-      await atualizarFornecedor(nomeFornecedor, telefoneFornecedor, unidadeEditando);
+      await atualizarFornecedor(
+        nomeFornecedor,
+        telefoneFornecedor,
+        unidadeEditando
+      );
       setEditando(false);
       buscaFornecedores();
     } catch (error) {
@@ -92,15 +96,12 @@ const Fornecedor = () => {
     }
   };
 
-
-
   const inativarFornecedor = async (row) => {
     try {
       setLoading(true);
       if (row.status === "ativo") {
         await inativarFornecedor(row.id);
       } else {
-
         await reativaFornecedor(row.id);
       }
       buscaFornecedores();
@@ -116,24 +117,24 @@ const Fornecedor = () => {
     visible: { opacity: 1 },
   };
 
-  const fornecedoresFiltrados = fornecedorCadastradas.filter(fornecedor =>
+  const fornecedoresFiltrados = fornecedorCadastradas.filter((fornecedor) =>
     fornecedor.nome.toLowerCase().includes(filtroNome.toLowerCase())
   );
 
   return (
     <div className="flex w-full ">
       <Navbar />
-      <div className='flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2'>
+      <div className="flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2">
         <MenuMobile />
         <motion.div
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
           transition={{ duration: 0.9 }}
         >
           <HeaderPerfil />
-          <h1 className='justify-center md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex gap-2'>
+          <h1 className="justify-center md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex gap-2">
             <CategoryIcon />
             Fornecedor
           </h1>
@@ -169,9 +170,12 @@ const Fornecedor = () => {
                 />
               </div>
 
-              <div className='w-full'>
+              <div className="w-full">
                 {loading ? (
-                  <TableLoading />
+                  <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
+                    <TableLoading />
+                    <label className="text-sm">Carregando Informações!</label>
+                  </div>
                 ) : fornecedoresFiltrados.length > 0 ? (
                   <TableComponent
                     headers={fornecedores}
@@ -185,7 +189,10 @@ const Fornecedor = () => {
                 ) : (
                   <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
                     <TableLoading />
-                    <label className="text-sm">Fornecedor não encontrado!</label></div>
+                    <label className="text-sm">
+                      Fornecedor não encontrado!
+                    </label>
+                  </div>
                 )}
               </div>
 
@@ -211,7 +218,9 @@ const Fornecedor = () => {
                       autoComplete="off"
                       value={nomeFornecedor}
                       onChange={(e) => setNomeFornecedor(e.target.value)}
-                      sx={{ width: { xs: "95%", sm: "100%", md: "40%", lg: "95%" } }}
+                      sx={{
+                        width: { xs: "95%", sm: "100%", md: "40%", lg: "95%" },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -225,12 +234,14 @@ const Fornecedor = () => {
                       onChange={(e) => setTelefoneFornecedor(e.target.value)}
                     />
 
-
                     <div className="flex w-[96%] items-end justify-end ">
                       <ButtonComponent
                         startIcon={<AddCircleOutlineIcon fontSize="small" />}
                         title={"Cadastrar"}
                         subtitle={"Cadastrar"}
+                        disabled={
+                          !nomeFornecedor.trim() || !telefoneFornecedor.trim()
+                        }
                         onClick={CadastrarFornecedor}
                         buttonSize="large"
                       />
@@ -247,8 +258,7 @@ const Fornecedor = () => {
                 tamanhoTitulo={"73%"}
                 conteudo={
                   <>
-                    <div className="mt-4 flex gap-3 flex-wrap w-full">
-
+                    <div className="flex gap-3 flex-wrap w-full">
                       <TextField
                         fullWidth
                         variant="outlined"
@@ -267,17 +277,19 @@ const Fornecedor = () => {
                         }}
                       />
                       <TelefoneInput
-                      value={telefoneFornecedor}
-                      onChange={(e) => setTelefoneFornecedor(e.target.value)}
-                    />
+                        value={telefoneFornecedor}
+                        onChange={(e) => setTelefoneFornecedor(e.target.value)}
+                      />
 
-                     
                       <div className="flex w-[100%] items-end justify-end ">
                         <ButtonComponent
                           startIcon={<Save fontSize="small" />}
                           title={"Salvar"}
                           subtitle={"Salvar"}
                           buttonSize="large"
+                          disabled={
+                            !nomeFornecedor.trim() || !telefoneFornecedor.trim()
+                          }
                           onClick={SalvarFornecedorEditado}
                         />
                       </div>

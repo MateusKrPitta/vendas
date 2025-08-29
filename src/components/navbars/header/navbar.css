@@ -1,0 +1,101 @@
+/* Navbar.css */
+.collapsible-navbar {
+  width: 60px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #d2d7db;
+  transition: width 0.3s ease;
+  overflow-x: hidden;
+  z-index: 1000;
+  padding: 10px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.collapsible-navbar.expanded {
+  width: 250px;
+  z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+.logo-transition {
+  transition: all 0.3s ease;
+  width: 50px;
+  height: auto;
+}
+
+.collapsible-navbar.expanded .logo-transition {
+  width: 100px;
+}
+
+.nav-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  color: #0d2d43;
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 10px;
+  gap: 12px;
+  text-align: left;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 25px;
+  overflow: hidden;
+}
+
+.nav-button:hover {
+  background-color: #f0f0f0;
+  transform: translateX(2px);
+}
+
+.active-route {
+  border-bottom: 2px solid #0d2d43;
+  background-color: #f5f5f5;
+}
+
+.section-label {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #0d2d43;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease 0.1s;
+}
+
+.collapsible-navbar.expanded .section-label {
+  opacity: 1;
+}
+
+/* Espaço para compensar a navbar fixa */
+.nav-space {
+  width: 80px;
+  height: 100vh;
+  transition: width 0.3s ease;
+}
+
+.nav-space.expanded {
+  width: 250px;
+}
+
+/* Ajuste para o conteúdo principal não ficar atrás da navbar */
+.main-content {
+  margin-left: 80px;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 80px);
+}
+
+.main-content.expanded {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+}

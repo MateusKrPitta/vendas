@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from "react";
-import Navbar from '../../../components/navbars/header';
-import HeaderPerfil from '../../../components/navbars/perfil';
-import ButtonComponent from '../../../components/button';
-import HeaderCadastro from '../../../components/navbars/cadastro';
-import CentralModal from '../../../components/modal-central';
+import Navbar from "../../../components/navbars/header";
+import HeaderPerfil from "../../../components/navbars/perfil";
+import ButtonComponent from "../../../components/button";
+import HeaderCadastro from "../../../components/navbars/cadastro";
+import CentralModal from "../../../components/modal-central";
 import SelectTextFields from "../../../components/select";
-import Checkbox from '@mui/material/Checkbox';
+import Checkbox from "@mui/material/Checkbox";
 import MenuMobile from "../../../components/menu-mobile";
 import ModalLateral from "../../../components/modal-lateral";
-import { Close, Edit, } from '@mui/icons-material';
+import { Close, Edit } from "@mui/icons-material";
 import TableLoading from "../../../components/loading/loading-table/loading";
-import { Box, Chip, FormControlLabel, IconButton, InputAdornment, TextField } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import SearchIcon from '@mui/icons-material/Search';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import NotesIcon from '@mui/icons-material/Notes';
+import {
+  Box,
+  Chip,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from "@mui/material";
+import PersonIcon from "@mui/icons-material/Person";
+import SearchIcon from "@mui/icons-material/Search";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import NotesIcon from "@mui/icons-material/Notes";
 import { LocationOnOutlined, Password } from "@mui/icons-material";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CustomToast from "../../../components/toast";
 import TableComponent from "../../../components/table";
 import { buscarUnidades } from "../../../service/get/unidade";
@@ -26,10 +33,9 @@ import { buscarUsuarios } from "../../../service/get/usuarios";
 import { atualizarUsuario } from "../../../service/put/usuario";
 import { inativarUsuario } from "../../../service/delete/usuario";
 import { reativaUsuario } from "../../../service/reativa/usuario";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 const Usuario = () => {
-
   const [editando, setEditando] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cadastroUsuario, setCadastroUsuario] = useState(false);
@@ -41,34 +47,33 @@ const Usuario = () => {
   const [unidadesSelecionadas, setUnidadesSelecionadas] = useState([]);
   const [unidades, setUnidades] = useState([]);
 
-  const [nomeCompleto, setNomeCompleto] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [nomeCompleto, setNomeCompleto] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
   const FecharCadastroUsuario = () => {
     setCadastroUsuario(false);
     limparCampos();
   };
 
-
   const buscarUnidadesCadastradas = async () => {
     try {
       const response = await buscarUnidades();
-      const unidadesFormatadas = response.map(u => ({
+      const unidadesFormatadas = response.map((u) => ({
         value: u.id,
         label: u.nome,
-        ativo: u.ativo
+        ativo: u.ativo,
       }));
       setUnidades(unidadesFormatadas);
     } catch (error) {
-      console.error('Erro ao buscar unidades:', error);
+      console.error("Erro ao buscar unidades:", error);
     }
   };
 
   const limparCampos = () => {
-    setNomeCompleto('');
-    setEmail('');
-    setSenha('');
+    setNomeCompleto("");
+    setEmail("");
+    setSenha("");
     setUnidadesSelecionadas([]);
     setPermissao(null);
     setUnidadeSelecionada(null);
@@ -79,27 +84,27 @@ const Usuario = () => {
     try {
       setLoading(true);
       const response = await buscarUsuarios();
-      const usuariosFormatados = response.map(usuario => {
+      const usuariosFormatados = response.map((usuario) => {
         const unidadePrincipal = usuario.unidadeId
-          ? unidades.find(u => u.value === usuario.unidadeId)
+          ? unidades.find((u) => u.value === usuario.unidadeId)
           : null;
 
         const unidadesAdicionais = usuario.unidades || [];
 
         const todasUnidades = [
           ...(unidadePrincipal ? [unidadePrincipal.label] : []),
-          ...unidadesAdicionais.map(u => u.nome)
+          ...unidadesAdicionais.map((u) => u.nome),
         ];
 
-        const unidadesTexto = todasUnidades.join(', ') || 'Sem unidade';
+        const unidadesTexto = todasUnidades.join(", ") || "Sem unidade";
 
         return {
           id: usuario.id,
-          nome: usuario.fullName || 'Nome não disponível',
-          email: usuario.email || 'Email não disponível',
+          nome: usuario.fullName || "Nome não disponível",
+          email: usuario.email || "Email não disponível",
           unidade: unidadesTexto,
-          ativo: usuario.ativo ? 'Ativo' : 'Inativo',
-          tipo: usuario.tipo
+          ativo: usuario.ativo ? "Ativo" : "Inativo",
+          tipo: usuario.tipo,
         };
       });
       setUsers(usuariosFormatados);
@@ -112,7 +117,13 @@ const Usuario = () => {
 
   const CadastrarUsuario = async () => {
     try {
-      await criarUsuario(nomeCompleto, email, senha, unidadesSelecionadas, permissao);
+      await criarUsuario(
+        nomeCompleto,
+        email,
+        senha,
+        unidadesSelecionadas,
+        permissao
+      );
       setCadastroUsuario(false);
       buscarUsuariosCadastrados();
     } catch (error) {
@@ -129,7 +140,7 @@ const Usuario = () => {
         null,
         permissao,
         senha || undefined,
-        unidadesSelecionadas 
+        unidadesSelecionadas
       );
       setEditando(false);
       buscarUsuariosCadastrados();
@@ -139,20 +150,20 @@ const Usuario = () => {
   };
   const handleCloseEdicao = () => {
     setEditando(false);
-    limparCampos(); 
+    limparCampos();
   };
 
   const handleEditClick = (user) => {
     setEditUser(user);
     setNomeCompleto(user.nome);
     setEmail(user.email);
-    setSenha('');
-  
-    const unidadesArray = user.unidade.split(', ');
+    setSenha("");
+
+    const unidadesArray = user.unidade.split(", ");
     const unidadesIds = unidadesArray
-      .map(nome => unidades.find(u => u.label === nome)?.value)
+      .map((nome) => unidades.find((u) => u.label === nome)?.value)
       .filter(Boolean);
-    
+
     setUnidadesSelecionadas(unidadesIds);
     setPermissao(user.tipo);
     setEditando(true);
@@ -172,10 +183,12 @@ const Usuario = () => {
   };
 
   const handleDeleteUnidade = (unidadeToDelete) => () => {
-    setUnidadesSelecionadas(unidadesSelecionadas.filter(unidade => unidade !== unidadeToDelete));
+    setUnidadesSelecionadas(
+      unidadesSelecionadas.filter((unidade) => unidade !== unidadeToDelete)
+    );
   };
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter((user) =>
     user.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -196,18 +209,19 @@ const Usuario = () => {
   return (
     <div className="flex w-full ">
       <Navbar />
-      <div className='flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2'>
+      <div className="flex ml-0 flex-col gap-3 w-full items-end md:ml-0 lg:ml-2">
         <MenuMobile />
         <motion.div
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
           initial="hidden"
           animate="visible"
           variants={fadeIn}
           transition={{ duration: 0.9 }}
         >
           <HeaderPerfil />
-          <h1 className='justify-center md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex gap-2 '>
-            <AccountCircleIcon />Usuário
+          <h1 className="justify-center md:justify-center lg:justify-start items-center md:text-2xl font-bold text-black w-[99%] flex gap-2 ">
+            <AccountCircleIcon />
+            Usuário
           </h1>
           <div className=" items-center w-full flex mt-[40px] gap-2 flex-wrap md:items-start">
             <div className="hidden lg:w-[14%] lg:flex">
@@ -223,7 +237,7 @@ const Usuario = () => {
                   autoComplete="off"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{ width: { xs: '72%', sm: '50%', md: '40%', lg: '40%' } }}
+                  sx={{ width: { xs: "72%", sm: "50%", md: "40%", lg: "40%" } }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -233,16 +247,19 @@ const Usuario = () => {
                   }}
                 />
                 <ButtonComponent
-                  startIcon={<AddCircleOutlineIcon fontSize='small' />}
-                  title={'Cadastrar'}
-                  subtitle={'Cadastrar'}
+                  startIcon={<AddCircleOutlineIcon fontSize="small" />}
+                  title={"Cadastrar"}
+                  subtitle={"Cadastrar"}
                   buttonSize="large"
                   onClick={() => setCadastroUsuario(true)}
                 />
               </div>
-              <div className='w-full'>
+              <div className="w-full">
                 {loading ? (
-                  <TableLoading />
+                  <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
+                    <TableLoading />
+                    <label className="text-sm">Carregando Informações!</label>
+                  </div>
                 ) : filteredUsers.length > 0 ? (
                   <TableComponent
                     headers={UsuariosCadastrados}
@@ -256,24 +273,24 @@ const Usuario = () => {
                 ) : (
                   <div className="text-center flex items-center mt-28 justify-center gap-5 flex-col text-primary">
                     <TableLoading />
-                    <label className="text-sm">Usuário não encontrado!</label></div>
+                    <label className="text-sm">Usuário não encontrado!</label>
+                  </div>
                 )}
               </div>
 
-
               <CentralModal
-                tamanhoTitulo={'81%'}
-                maxHeight={'90vh'}
-                top={'20%'}
-                left={'28%'}
-                width={'620px'}
+                tamanhoTitulo={"81%"}
+                maxHeight={"90vh"}
+                top={"20%"}
+                left={"28%"}
+                width={"620px"}
                 icon={<AddCircleOutlineIcon fontSize="small" />}
                 open={cadastroUsuario}
                 onClose={FecharCadastroUsuario}
                 title="Cadastrar Usuário"
               >
                 <div className="overflow-y-auto overflow-x-hidden max-h-[300px]">
-                  <div className='mt-4 flex gap-3 flex-wrap'>
+                  <div className="mt-4 flex gap-3 flex-wrap">
                     <TextField
                       fullWidth
                       variant="outlined"
@@ -283,7 +300,9 @@ const Usuario = () => {
                       value={nomeCompleto}
                       onChange={(e) => setNomeCompleto(e.target.value)}
                       autoComplete="off"
-                      sx={{ width: { xs: '100%', sm: '50%', md: '40%', lg: '47%' } }}
+                      sx={{
+                        width: { xs: "100%", sm: "50%", md: "40%", lg: "47%" },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -301,14 +320,15 @@ const Usuario = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       autoComplete="off"
-                      sx={{ width: { xs: '48%', sm: '43%', md: '45%', lg: '47%' } }}
+                      sx={{
+                        width: { xs: "48%", sm: "43%", md: "45%", lg: "47%" },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
                             <NotesIcon />
                           </InputAdornment>
                         ),
-
                       }}
                     />
                     <TextField
@@ -321,21 +341,22 @@ const Usuario = () => {
                       value={senha}
                       onChange={(e) => setSenha(e.target.value)}
                       autoComplete="off"
-                      sx={{ width: { xs: '48%', sm: '40%', md: '40%', lg: '47%' } }}
+                      sx={{
+                        width: { xs: "48%", sm: "40%", md: "40%", lg: "47%" },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
                             <Password />
                           </InputAdornment>
                         ),
-
                       }}
                     />
 
                     <SelectTextFields
-                      width={'260px'}
+                      width={"260px"}
                       icon={<LocationOnOutlined fontSize="small" />}
-                      label={'Unidades'}
+                      label={"Unidades"}
                       backgroundColor={"#D9D9D9"}
                       name={"unidades"}
                       fontWeight={500}
@@ -344,15 +365,31 @@ const Usuario = () => {
                       options={unidades}
                       multiple
                     />
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1, ml: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 0.5,
+                        mt: 1,
+                        ml: 1,
+                      }}
+                    >
                       {unidadesSelecionadas.map((unidadeId) => {
-                        const unidade = unidades.find(u => u.value === unidadeId);
+                        const unidade = unidades.find(
+                          (u) => u.value === unidadeId
+                        );
                         return (
                           <Chip
                             key={unidadeId}
-                            label={unidade ? unidade.label : 'Unidade não encontrada'}
+                            label={
+                              unidade ? unidade.label : "Unidade não encontrada"
+                            }
                             onDelete={handleDeleteUnidade(unidadeId)}
-                            deleteIcon={<IconButton size="small"><Close fontSize="small" /></IconButton>}
+                            deleteIcon={
+                              <IconButton size="small">
+                                <Close fontSize="small" />
+                              </IconButton>
+                            }
                             variant="outlined"
                             size="small"
                           />
@@ -360,7 +397,6 @@ const Usuario = () => {
                       })}
                     </Box>
                   </div>
-
 
                   <div className="w-full flex items-center mt-4 ml-2 font-bold mb-1">
                     <label className="w-[70%] text-xs">Permissão</label>
@@ -399,9 +435,9 @@ const Usuario = () => {
                   </div>
                   <div className="flex w-[96%] items-end justify-end mt-2 ">
                     <ButtonComponent
-                      startIcon={<AddCircleOutlineIcon fontSize='small' />}
-                      title={'Cadastrar'}
-                      subtitle={'Cadastrar'}
+                      startIcon={<AddCircleOutlineIcon fontSize="small" />}
+                      title={"Cadastrar"}
+                      subtitle={"Cadastrar"}
                       onClick={CadastrarUsuario}
                       buttonSize="large"
                     />
@@ -417,7 +453,7 @@ const Usuario = () => {
                 tamanhoTitulo="75%"
                 conteudo={
                   <div className="">
-                    <div className='mt-4 flex gap-3 flex-wrap'>
+                    <div className="mt-4 flex gap-3 flex-wrap">
                       <TextField
                         fullWidth
                         variant="outlined"
@@ -427,7 +463,14 @@ const Usuario = () => {
                         value={nomeCompleto}
                         onChange={(e) => setNomeCompleto(e.target.value)}
                         autoComplete="off"
-                        sx={{ width: { xs: '100%', sm: '50%', md: '40%', lg: '47%' } }}
+                        sx={{
+                          width: {
+                            xs: "100%",
+                            sm: "50%",
+                            md: "40%",
+                            lg: "47%",
+                          },
+                        }}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -446,7 +489,9 @@ const Usuario = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         autoComplete="off"
-                        sx={{ width: { xs: '48%', sm: '45%', md: '40%', lg: '47%' } }}
+                        sx={{
+                          width: { xs: "48%", sm: "45%", md: "40%", lg: "47%" },
+                        }}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -466,7 +511,9 @@ const Usuario = () => {
                         value={senha}
                         onChange={(e) => setSenha(e.target.value)}
                         autoComplete="off"
-                        sx={{ width: { xs: '47%', sm: '50%', md: '40%', lg: '47%' } }}
+                        sx={{
+                          width: { xs: "47%", sm: "50%", md: "40%", lg: "47%" },
+                        }}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -475,18 +522,20 @@ const Usuario = () => {
                           ),
                         }}
                       />
-                     <SelectTextFields
-  width={'260px'}
-  icon={<LocationOnOutlined fontSize="small" />}
-  label={'Unidades'}
-  backgroundColor={"#D9D9D9"}
-  name={"unidades"}
-  fontWeight={500}
-  value={unidadesSelecionadas}
-  onChange={(e) => setUnidadesSelecionadas(e.target.value)}
-  options={unidades}
-  multiple
-/>
+                      <SelectTextFields
+                        width={"260px"}
+                        icon={<LocationOnOutlined fontSize="small" />}
+                        label={"Unidades"}
+                        backgroundColor={"#D9D9D9"}
+                        name={"unidades"}
+                        fontWeight={500}
+                        value={unidadesSelecionadas}
+                        onChange={(e) =>
+                          setUnidadesSelecionadas(e.target.value)
+                        }
+                        options={unidades}
+                        multiple
+                      />
                     </div>
                     <div className="w-full flex items-center mt-4 ml-2 font-bold mb-1">
                       <label className="w-[70%] text-xs">Permissão</label>
@@ -524,12 +573,11 @@ const Usuario = () => {
                       />
                     </div>
 
-
                     <div className="flex w-[96%] items-end justify-end mt-2 ">
                       <ButtonComponent
-                        startIcon={<AddCircleOutlineIcon fontSize='small' />}
-                        title={'Salvar'}
-                        subtitle={'Salvar'}
+                        startIcon={<AddCircleOutlineIcon fontSize="small" />}
+                        title={"Salvar"}
+                        subtitle={"Salvar"}
                         buttonSize="large"
                         onClick={EditarUsuario}
                       />
@@ -543,6 +591,6 @@ const Usuario = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Usuario;
